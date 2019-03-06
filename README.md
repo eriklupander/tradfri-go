@@ -6,6 +6,8 @@ Native Go implementation for talking CoAP to a [IKEA Trådfri](https://www.ikea.
 
 **Note: The author is not in any way affiliated or related to IKEA, this is purely a hobby project!**
 
+**Note 2: The application is being developed and have bugs and known issues!**
+
 - CoAP implementation from [github.com/dustin/go-coap](github.com/dustin/go-coap)
 - DTLS 1.2 support from [github.com/bocajim/dtls](github.com/bocajim/dtls)
 
@@ -75,7 +77,7 @@ Now, you can use the simple RESTful API provided by tradfri-go which returns mor
     
 Or use one of the declarative endpoints to mutate the state of the bulb:
 
-    > curl -X PUT -data '{"rgbcolor":"f1e0b5"}' http://localhost:8080/api/device/65538/rgbcolor
+    > curl -X PUT -data '{"rgbcolor":"f1e0b5"}' http://localhost:8080/api/device/65538/rgb
     
 Just like the client mode, the application will try to use clientId/PSK from _psk.key_ or using env vars.
 

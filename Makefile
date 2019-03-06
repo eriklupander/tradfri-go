@@ -10,6 +10,12 @@ format:
 vet:
 	go vet ./...
 
+test:
+	mkdir -p ${TEST_RESULTS}
+	@go test -coverprofile=${TEST_RESULTS}/unittest.out -v $(GOPACKAGES)
+	@go tool cover -html=${TEST_RESULTS}/unittest.out -o ${TEST_RESULTS}/unittest-coverage.html
+	rm -f ${TEST_RESULTS}/unittest.out
+
 build:
 	go build -o tradfri-go
 

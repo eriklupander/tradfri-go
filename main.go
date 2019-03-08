@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/eriklupander/dtls"
 	"github.com/eriklupander/tradfri-go/router"
 	"github.com/eriklupander/tradfri-go/tradfri"
 	"github.com/spf13/viper"
@@ -18,7 +17,7 @@ import (
 var serverMode, authenticate *bool
 
 func init() {
-	dtls.SetLogLevel("debug")
+	// dtls.SetLogLevel("debug")
 
 	// read clientId / PSK from file if possible
 	ok := resolveClientIdAndPSKFromFile()
@@ -71,7 +70,7 @@ func main() {
 	handleSigterm(nil)
 	if *serverMode {
 		fmt.Println("Running in server mode on :8080")
-		go router.SetupChi(tradfri.NewDtlsClient())
+		go router.SetupChi(tradfri.NewTradfriClient())
 
 		wg := sync.WaitGroup{}
 		wg.Add(1)
@@ -81,10 +80,10 @@ func main() {
 		if *authenticate {
 			performTokenExchange(clientId, psk)
 		} else if *get != "" {
-			resp, _ := tradfri.NewDtlsClient().Get(*get)
+			resp, _ := tradfri.NewTradfriClient().Get(*get)
 			fmt.Printf("%v", string(resp.Payload))
 		} else if *put != "" {
-			resp, _ := tradfri.NewDtlsClient().Put(*put, *payload)
+			resp, _ := tradfri.NewTradfriClient().Put(*put, *payload)
 			fmt.Printf("%v", string(resp.Payload))
 		} else {
 			fmt.Println("No client operation was specified, supported one(s) are: authenticate")
@@ -112,7 +111,7 @@ func performTokenExchange(clientId *string, psk *string) {
 	// required when performing token exchange
 	viper.Set("CLIENT_ID", "Client_identity")
 	viper.Set("PRE_SHARED_KEY", *psk)
-	dtlsClient := tradfri.NewDtlsClient()
+	dtlsClient := tradfri.NewTradfriClient()
 
 	authToken, err := dtlsClient.AuthExchange(*clientId)
 	if err != nil {

@@ -14,10 +14,10 @@ import (
 	"time"
 )
 
-var dtlsClient *tradfri.DtlsClient
+var tradfriClient *tradfri.TradfriClient
 
-func SetupChi(client *tradfri.DtlsClient) {
-	dtlsClient = client
+func SetupChi(client *tradfri.TradfriClient) {
+	tradfriClient = client
 
 	r := chi.NewRouter()
 
@@ -44,9 +44,11 @@ func SetupChi(client *tradfri.DtlsClient) {
 		r.Get("/groups/{groupId}/deviceIds", getDeviceIdsOnGroup)
 		r.Get("/groups/{groupId}/devices", getDevicesOnGroup)
 		r.Get("/device/{deviceId}", getDevice)
-		r.Put("/device/{deviceId}/color/{x}/{y}", setColorXY)
+		r.Put("/device/{deviceId}/color", setColorXY)
 		r.Put("/device/{deviceId}/rgb", setColorRGBHex)
-		r.Put("/device/{deviceId}/dimmer/{dimming}", setDimming)
+		r.Put("/device/{deviceId}/dimmer", setDimming)
+		r.Put("/device/{deviceId}/power", setPowered)
+		r.Put("/device/{deviceId}", setState)
 
 	})
 	http.ListenAndServe(":8080", r)
@@ -59,12 +61,24 @@ func setColorXY(w http.ResponseWriter, r *http.Request) {
 	yStr := chi.URLParam(r, "y")
 	x, _ := strconv.Atoi(xStr)
 	y, _ := strconv.Atoi(yStr)
-	err := dtlsClient.PutDeviceColor(deviceId, x, y)
-	respond(w, "{}", err)
+	res, err := tradfriClient.PutDeviceColor(deviceId, x, y)
+	respond(w, res, err)
 }
 
 type RgbColorRequest struct {
 	RGBcolor string `json:"rgbcolor"`
+}
+type DimmingRequest struct {
+	Dimming int `json:"dimming"`
+}
+type PowerRequest struct {
+	Power int `json:"power"`
+}
+
+type StateRequest struct {
+	RGBcolor string `json:"rgbcolor"`
+	Dimmer int `json:"dimmer"`
+	Power int `json:"power"`
 }
 
 func setColorRGBHex(w http.ResponseWriter, r *http.Request) {
@@ -73,41 +87,62 @@ func setColorRGBHex(w http.ResponseWriter, r *http.Request) {
 
 	rgbColorRequest := RgbColorRequest{}
 	err := json.Unmarshal(body, &rgbColorRequest)
-	err = dtlsClient.PutDeviceColorRGB(deviceId, rgbColorRequest.RGBcolor)
-	respond(w, "{}", err)
+	result, err := tradfriClient.PutDeviceColorRGB(deviceId, rgbColorRequest.RGBcolor)
+	respond(w, result, err)
 }
 
 func setDimming(w http.ResponseWriter, r *http.Request) {
 	deviceId := chi.URLParam(r, "deviceId")
-	dimmingStr := chi.URLParam(r, "dimming")
-	dimming, _ := strconv.Atoi(dimmingStr)
+	body, _ := ioutil.ReadAll(r.Body)
 
-	err := dtlsClient.PutDeviceDimming(deviceId, dimming)
-	respond(w, "{}", err)
+	dimmingRequest := DimmingRequest{}
+	err := json.Unmarshal(body, &dimmingRequest)
+	res, err := tradfriClient.PutDeviceDimming(deviceId, dimmingRequest.Dimming)
+	respond(w, res, err)
+}
+
+func setPowered(w http.ResponseWriter, r *http.Request) {
+	deviceId := chi.URLParam(r, "deviceId")
+	body, _ := ioutil.ReadAll(r.Body)
+
+	powerRequest := PowerRequest{}
+	err := json.Unmarshal(body, &powerRequest)
+	res, err := tradfriClient.PutDevicePower(deviceId, powerRequest.Power)
+	respond(w, res, err)
+}
+
+func setState(w http.ResponseWriter, r *http.Request) {
+	deviceId := chi.URLParam(r, "deviceId")
+	body, _ := ioutil.ReadAll(r.Body)
+
+	stateReq := StateRequest{}
+	err := json.Unmarshal(body, &stateReq)
+	res, err := tradfriClient.PutDeviceState(deviceId, stateReq.Power, stateReq.Dimmer, stateReq.RGBcolor)
+	respond(w, res, err)
 }
 
 func listGroups(w http.ResponseWriter, r *http.Request) {
-	groups, err := dtlsClient.ListGroups()
+	groups, err := tradfriClient.ListGroups()
 	respond(w, groups, err)
 }
 
 func getGroup(w http.ResponseWriter, r *http.Request) {
-	group, err := dtlsClient.GetGroup(chi.URLParam(r, "groupId"))
+	group, err := tradfriClient.GetGroup(chi.URLParam(r, "groupId"))
 	respond(w, group, err)
 }
 
 func getDevicesOnGroup(w http.ResponseWriter, r *http.Request) {
-	group, _ := dtlsClient.GetGroup(chi.URLParam(r, "groupId"))
+	group, _ := tradfriClient.GetGroup(chi.URLParam(r, "groupId"))
 	devices := make([]model.BulbResponse, 0)
 	for _, deviceID := range group.Content.DeviceList.DeviceIds {
-		device, _ := dtlsClient.GetDevice(strconv.Itoa(deviceID))
+		device, _ := tradfriClient.GetDevice(strconv.Itoa(deviceID))
 		devices = append(devices, model.ToDeviceResponse(device))
 	}
 	respondWithJSON(w, 200, devices)
 }
 
 func getDeviceIdsOnGroup(w http.ResponseWriter, r *http.Request) {
-	group, _ := dtlsClient.GetGroup(chi.URLParam(r, "groupId"))
+	group, _ := tradfriClient.GetGroup(chi.URLParam(r, "groupId"))
 	deviceIds := make([]int, 0)
 	for _, deviceID := range group.Content.DeviceList.DeviceIds {
 		deviceIds = append(deviceIds, deviceID)
@@ -124,7 +159,7 @@ func respond(w http.ResponseWriter, payload interface{}, err error) {
 }
 
 func getDevice(w http.ResponseWriter, r *http.Request) {
-	device, _ := dtlsClient.GetDevice(chi.URLParam(r, "deviceId"))
+	device, _ := tradfriClient.GetDevice(chi.URLParam(r, "deviceId"))
 	respondWithJSON(w, 200, model.ToDeviceResponse(device))
 }
 

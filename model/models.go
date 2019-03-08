@@ -110,3 +110,7 @@ type BulbResponse struct {
 	RGB            string         `json:"rgbcolor"`
 	Powered        bool           `json:"powered"`
 }
+
+type Result struct {
+	Msg string
+}

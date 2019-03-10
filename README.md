@@ -8,8 +8,8 @@ Native Go implementation for talking CoAP to a [IKEA Trådfri](https://www.ikea.
 
 **Note 2: The application is being developed and have bugs and known issues!**
 
-- CoAP implementation from [github.com/dustin/go-coap](github.com/dustin/go-coap)
-- DTLS 1.2 support from [github.com/bocajim/dtls](github.com/bocajim/dtls)
+- CoAP implementation from [github.com/dustin/go-coap](https://github.com/dustin/go-coap)
+- DTLS 1.2 support from [github.com/bocajim/dtls](https://github.com/bocajim/dtls)
 
 This application is just stitching together the excellent work of [github.com/dustin](https://github.com/dustin) and [github.com/bocajim](https://github.com/bocajim) into a stand-alone application that can talk to a IKEA Trådfri gateway out-of-the-box without any dependencies on libcoap, openssl or similar libraries.
 

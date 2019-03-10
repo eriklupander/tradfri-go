@@ -7,7 +7,6 @@ import (
 	"github.com/eriklupander/tradfri-go/tradfri"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
-	"github.com/go-chi/render"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -27,7 +26,6 @@ func SetupChi(client *tradfri.TradfriClient) {
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
-	r.Use(render.SetContentType(render.ContentTypeJSON))
 
 	// Set a timeout value on the request context (ctx), that will signal
 	// through ctx.Done() that the request has timed out and further

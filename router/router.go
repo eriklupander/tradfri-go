@@ -16,6 +16,7 @@ import (
 
 var tradfriClient *tradfri.TradfriClient
 
+// SetupChi sets up our HTTP router/muxer using Chi, a pointer to a TradfriClient must be passed.
 func SetupChi(client *tradfri.TradfriClient) {
 	tradfriClient = client
 
@@ -47,12 +48,13 @@ func SetupChi(client *tradfri.TradfriClient) {
 		r.Put("/device/{deviceId}/color", setColorXY)
 		r.Put("/device/{deviceId}/rgb", setColorRGBHex)
 		r.Put("/device/{deviceId}/dimmer", setDimming)
-		r.Put("/device/{deviceId}/power", setPowered)
+		r.Put("/device/{deviceId}/power", setPower)
 		r.Put("/device/{deviceId}", setState)
 
 	})
-	http.ListenAndServe(":8080", r)
 
+	// Blocks here!
+	http.ListenAndServe(":8080", r)
 }
 
 func setColorXY(w http.ResponseWriter, r *http.Request) {
@@ -65,27 +67,11 @@ func setColorXY(w http.ResponseWriter, r *http.Request) {
 	respond(w, res, err)
 }
 
-type RgbColorRequest struct {
-	RGBcolor string `json:"rgbcolor"`
-}
-type DimmingRequest struct {
-	Dimming int `json:"dimming"`
-}
-type PowerRequest struct {
-	Power int `json:"power"`
-}
-
-type StateRequest struct {
-	RGBcolor string `json:"rgbcolor"`
-	Dimmer int `json:"dimmer"`
-	Power int `json:"power"`
-}
-
 func setColorRGBHex(w http.ResponseWriter, r *http.Request) {
 	deviceId := chi.URLParam(r, "deviceId")
 	body, _ := ioutil.ReadAll(r.Body)
 
-	rgbColorRequest := RgbColorRequest{}
+	rgbColorRequest := model.RgbColorRequest{}
 	err := json.Unmarshal(body, &rgbColorRequest)
 	result, err := tradfriClient.PutDeviceColorRGB(deviceId, rgbColorRequest.RGBcolor)
 	respond(w, result, err)
@@ -95,17 +81,17 @@ func setDimming(w http.ResponseWriter, r *http.Request) {
 	deviceId := chi.URLParam(r, "deviceId")
 	body, _ := ioutil.ReadAll(r.Body)
 
-	dimmingRequest := DimmingRequest{}
+	dimmingRequest := model.DimmingRequest{}
 	err := json.Unmarshal(body, &dimmingRequest)
 	res, err := tradfriClient.PutDeviceDimming(deviceId, dimmingRequest.Dimming)
 	respond(w, res, err)
 }
 
-func setPowered(w http.ResponseWriter, r *http.Request) {
+func setPower(w http.ResponseWriter, r *http.Request) {
 	deviceId := chi.URLParam(r, "deviceId")
 	body, _ := ioutil.ReadAll(r.Body)
 
-	powerRequest := PowerRequest{}
+	powerRequest := model.PowerRequest{}
 	err := json.Unmarshal(body, &powerRequest)
 	res, err := tradfriClient.PutDevicePower(deviceId, powerRequest.Power)
 	respond(w, res, err)
@@ -115,7 +101,7 @@ func setState(w http.ResponseWriter, r *http.Request) {
 	deviceId := chi.URLParam(r, "deviceId")
 	body, _ := ioutil.ReadAll(r.Body)
 
-	stateReq := StateRequest{}
+	stateReq := model.StateRequest{}
 	err := json.Unmarshal(body, &stateReq)
 	res, err := tradfriClient.PutDeviceState(deviceId, stateReq.Power, stateReq.Dimmer, stateReq.RGBcolor)
 	respond(w, res, err)
@@ -123,12 +109,16 @@ func setState(w http.ResponseWriter, r *http.Request) {
 
 func listGroups(w http.ResponseWriter, r *http.Request) {
 	groups, err := tradfriClient.ListGroups()
-	respond(w, groups, err)
+	groupResponses := make([]model.GroupResponse, 0)
+	for _, g := range groups {
+		groupResponses = append(groupResponses, model.ToGroupResponse(g))
+	}
+	respond(w, groupResponses, err)
 }
 
 func getGroup(w http.ResponseWriter, r *http.Request) {
 	group, err := tradfriClient.GetGroup(chi.URLParam(r, "groupId"))
-	respond(w, group, err)
+	respond(w, model.ToGroupResponse(group), err)
 }
 
 func getDevicesOnGroup(w http.ResponseWriter, r *http.Request) {

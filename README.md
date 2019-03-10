@@ -72,7 +72,7 @@ Now, you can use the simple RESTful API provided by tradfri-go which returns mor
       "xcolor": 30015,
       "ycolor": 26870,
       "rgbcolor": "f1e0b5",
-      "powered": true
+      "power": true
     }
     
 Or use one of the declarative endpoints to mutate the state of the bulb:

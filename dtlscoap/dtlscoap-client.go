@@ -5,6 +5,7 @@ import (
 	"github.com/dustin/go-coap"
 	"github.com/eriklupander/dtls"
 	"github.com/spf13/viper"
+	"os"
 	"time"
 )
 
@@ -34,12 +35,13 @@ func (dc *DtlsClient) connect() {
 	peerParams := &dtls.PeerParams{
 		Addr:             gatewayIp,
 		Identity:         viper.GetString("CLIENT_ID"),
-		HandshakeTimeout: time.Second * 30}
+		HandshakeTimeout: time.Second * 15}
 	fmt.Printf("Connecting to peer at %v\n", gatewayIp)
 
 	dc.peer, err = listener.AddPeerWithParams(peerParams)
 	if err != nil {
-		panic("Unable to connect to Gateway at " + gatewayIp + ": " + err.Error())
+		fmt.Printf("Unable to connect to Gateway at %v: %v\n", gatewayIp, err.Error())
+		os.Exit(1)
 	}
 	dc.peer.UseQueue(true)
 	fmt.Printf("DTLS connection established to %v\n", gatewayIp)

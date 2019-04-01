@@ -12,6 +12,7 @@ import (
 	"strings"
 	"sync"
 	"syscall"
+	"time"
 )
 
 var serverMode, authenticate *bool
@@ -20,18 +21,76 @@ func init() {
 	// dtls.SetLogLevel("debug")
 
 	// read clientId / PSK from file if possible
-	ok := resolveClientIdAndPSKFromFile()
 	viper.AutomaticEnv()
-	if !ok {
+}
 
-		if viper.GetString("PRE_SHARED_KEY") == "" {
-			panic("Unable to resolve PRE_SHARED_KEY from env-var or psk.key file")
-		}
-		if viper.GetString("CLIENT_ID") == "" {
-			panic("Unable to resolve CLIENT_ID from env-var or psk.key file")
+func main() {
+	// Really ugly flag / config handling... :(
+	serverMode = flag.Bool("server", false, "Start in server mode?")
+	gatewayIp := flag.String("gateway", "", "ip to your gateway. No protocol or port here!")
+	authenticate = flag.Bool("authenticate", false, "Perform PSK exchange")
+	psk := flag.String("psk", "", "Pre-shared key on bottom of Gateway")
+	clientId := flag.String("clientId", "", "Your client id, make something up or use the NNN-NNN-NNN on the bottom of your Gateway")
+	get := flag.String("get", "", "URL to GET")
+	put := flag.String("put", "", "URL to PUT")
+	payload := flag.String("payload", "", "payload for PUT")
+	flag.Parse()
+
+	resolveGatewayIP(gatewayIp)
+
+	handleSigterm(nil)
+
+	// Handle the special authenticate use-case
+	if *authenticate {
+		performTokenExchange(clientId, psk)
+		return
+	}
+
+	ok := resolveClientIdAndPSKFromFile()
+	if !ok {
+		checkRequiredEnvVars()
+	}
+
+	// Check running mode...
+	if *serverMode {
+		fmt.Println("Running in server mode on :8080")
+		go router.SetupChi(tradfri.NewTradfriClient())
+
+		wg := sync.WaitGroup{}
+		wg.Add(1)
+		wg.Wait()
+	} else {
+		// client mode
+		if *get != "" {
+			resp, _ := tradfri.NewTradfriClient().Get(*get)
+			fmt.Printf("%v", string(resp.Payload))
+		} else if *put != "" {
+			resp, _ := tradfri.NewTradfriClient().Put(*put, *payload)
+			fmt.Printf("%v", string(resp.Payload))
+		} else {
+			fmt.Println("No client operation was specified, supported one(s) are: authenticate")
 		}
 	}
 
+}
+
+func checkRequiredEnvVars() {
+	if viper.GetString("PRE_SHARED_KEY") == "" {
+		panic("Unable to resolve PRE_SHARED_KEY from env-var or psk.key file")
+	}
+	if viper.GetString("CLIENT_ID") == "" {
+		panic("Unable to resolve CLIENT_ID from env-var or psk.key file")
+	}
+}
+
+func resolveGatewayIP(gatewayIp *string) {
+	if viper.GetString("GATEWAY_IP") == "" {
+		if *gatewayIp != "" {
+			viper.Set("GATEWAY_IP", *gatewayIp)
+		} else {
+			panic("Unable to resolve gateway IP from either of env var GATEWAY_IP or flag -gateway")
+		}
+	}
 }
 
 func resolveClientIdAndPSKFromFile() bool {
@@ -53,64 +112,21 @@ func resolveClientIdAndPSKFromFile() bool {
 	return true
 }
 
-func main() {
-	// Really ugly flag / config handling... :(
-	serverMode = flag.Bool("server", false, "Start in server mode?")
-	gatewayIp := flag.String("gateway", "", "ip to your gateway. No protocol or port here!")
-	authenticate = flag.Bool("authenticate", false, "Perform PSK exchange")
-	psk := flag.String("psk", "", "Pre-shared key on bottom of Gateway")
-	clientId := flag.String("clientId", "", "Your client id, make something up or use the NNN-NNN-NNN on the bottom of your Gateway")
-	get := flag.String("get", "", "URL to GET")
-	put := flag.String("put", "", "URL to PUT")
-	payload := flag.String("payload", "", "payload for PUT")
-	flag.Parse()
-
-	resolveGatewayIP(gatewayIp)
-
-	handleSigterm(nil)
-	if *serverMode {
-		fmt.Println("Running in server mode on :8080")
-		go router.SetupChi(tradfri.NewTradfriClient())
-
-		wg := sync.WaitGroup{}
-		wg.Add(1)
-		wg.Wait()
-	} else {
-		// client mode
-		if *authenticate {
-			performTokenExchange(clientId, psk)
-		} else if *get != "" {
-			resp, _ := tradfri.NewTradfriClient().Get(*get)
-			fmt.Printf("%v", string(resp.Payload))
-		} else if *put != "" {
-			resp, _ := tradfri.NewTradfriClient().Put(*put, *payload)
-			fmt.Printf("%v", string(resp.Payload))
-		} else {
-			fmt.Println("No client operation was specified, supported one(s) are: authenticate")
-		}
-	}
-
-}
-
-func resolveGatewayIP(gatewayIp *string) {
-	if viper.GetString("GATEWAY_IP") == "" {
-		if *gatewayIp != "" {
-			viper.Set("GATEWAY_IP", *gatewayIp)
-		} else {
-			panic("Unable to resolve gateway IP from either of env var GATEWAY_IP or flag -gateway")
-		}
-	}
-}
-
 func performTokenExchange(clientId *string, psk *string) {
 	if len(*clientId) < 1 || len(*psk) < 10 {
-		panic("Both clientId and psk args must be specified")
+		panic("Both clientId and psk args must be specified when performing key exchange")
 	}
 
-	// Note that we hard-code the Client_identity here before creating the DTLS client,
+	// Note that we hard-code "Client_identity" here before creating the DTLS client,
 	// required when performing token exchange
 	viper.Set("CLIENT_ID", "Client_identity")
 	viper.Set("PRE_SHARED_KEY", *psk)
+
+	go func() {
+		time.Sleep(time.Second * 5)
+		fmt.Println("(Please note that the key exchange may appear to be stuck at \"Connecting to peer at\" if the PSK from the bottom of your Gateway is not entered correctly.)")
+	}()
+
 	dtlsClient := tradfri.NewTradfriClient()
 
 	authToken, err := dtlsClient.AuthExchange(*clientId)

@@ -18,6 +18,10 @@ This application is just stitching together the excellent work of [github.com/du
 - https://github.com/glenndehaan/ikea-tradfri-coap-docs
 - https://bitsex.net/software/2017/coap-endpoints-on-ikea-tradfri/
 
+### Changelog
+- 2019-04-01: Fixed issue with -authenticate
+- 2019-03-10: Initial release
+
 ### Compatibility
 tradfri-go has been tested against the following DTLS-enabled COAP servers:
 
@@ -27,7 +31,7 @@ tradfri-go has been tested against the following DTLS-enabled COAP servers:
 ### Building
 Uses go modules.
 
-    export GO111MODULES=on
+    export GO111MODULE=on
     go build -o tradfri-go
     
 ### PSK exchange

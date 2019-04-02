@@ -12,6 +12,7 @@
 *.out
 
 psk.key
+config.json
 secret.key
 tradfri-go
 build

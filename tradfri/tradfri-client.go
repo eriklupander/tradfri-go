@@ -14,9 +14,9 @@ type TradfriClient struct {
 	dtlsclient *dtlscoap.DtlsClient
 }
 
-func NewTradfriClient() *TradfriClient {
+func NewTradfriClient(gatewayAddress, clientID, psk string) *TradfriClient {
 	client := &TradfriClient{}
-	client.dtlsclient = dtlscoap.NewDtlsClient()
+	client.dtlsclient = dtlscoap.NewDtlsClient(gatewayAddress, clientID, psk)
 	return client
 }
 

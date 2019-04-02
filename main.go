@@ -26,7 +26,7 @@ func init() {
 	commandFlags.String("get", "", "URL to GET")
 	commandFlags.String("put", "", "URL to PUT")
 	commandFlags.String("payload", "", "payload for PUT")
-	
+
 	commandFlags.AddFlagSet(configFlags)
 	commandFlags.Parse(os.Args[1:])
 
@@ -126,7 +126,7 @@ func performTokenExchange(gatewayAddress, clientID, psk string) {
 	if err != nil {
 		fail(err.Error())
 	}
-	fmt.Println("Your new PSK and clientID has been written to psk.key, keep this file safe!")
+	fmt.Println("Your configuration including the new PSK and clientID has been written to config.json, keep this file safe!")
 }
 
 func fail(msg string) {

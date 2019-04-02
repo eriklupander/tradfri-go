@@ -44,7 +44,7 @@ _tradfri-go_ supports this operation out of the box using the following command:
 
 The generated new PSK and settings used are stored in the current directory in the file "config.json", e.g:
 
-    > cat psk.key
+    > cat config.json
     {
       "client_id": "MyCoolID",
       "gateway_address": "192.168.1.19:5684",

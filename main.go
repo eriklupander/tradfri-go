@@ -54,15 +54,13 @@ func main() {
 	put, putErr := commandFlags.GetString("put")
 	payload, _ := commandFlags.GetString("payload")
 
-	fmt.Printf("------------- TODO REMOVE ME ---------\nKeys: %v\n", viper.AllSettings())
-
 	// Handle the special authenticate use-case
 	if authenticate {
 		performTokenExchange(gatewayAddress, clientID, psk)
 		return
 	}
 
-	checkRequiredConfig()
+	checkRequiredConfig(gatewayAddress, clientID, psk)
 
 	// Check running mode...
 	if serverMode {
@@ -87,12 +85,15 @@ func main() {
 
 }
 
-func checkRequiredConfig() {
-	if viper.GetString("PRE_SHARED_KEY") == "" {
-		fail("Unable to resolve PRE_SHARED_KEY from env-var or psk.key file")
+func checkRequiredConfig(gatewayAddress, clientID, psk string) {
+	if gatewayAddress == "" {
+		fail("Unable to resolve gatewayAddress from command-line flag or config.json file")
 	}
-	if viper.GetString("CLIENT_ID") == "" {
-		fail("Unable to resolve CLIENT_ID from env-var or psk.key file")
+	if clientID == "" {
+		fail("Unable to resolve clientID from command-line flag or config.json file")
+	}
+	if psk == "" {
+		fail("Unable to resolve psk (pre shared key) from command-line flag or config.json file")
 	}
 }
 

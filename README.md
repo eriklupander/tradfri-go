@@ -54,6 +54,20 @@ The generated new PSK and settings used are stored in the current directory in t
     }
     
 _tradfri-go_ will try to read _config.json_ when starting up, and will in that case set the required properties accordingly.
+
+If you don't feel like using _config.json_, you can either specify the configuration as command-line flags or using the following environment variables:
+
+    ./tradfri-go --server --client_id MyCoolID122 --psk mynewkey --gateway_ip=192.168.1.19
+
+or
+
+    > export CLIENT_ID=MyCoolID1122
+    > export PRE_SHARED_KEY=mynewkey
+    > export GATEWAY_IP=192.168.1.19
+    
+Configuration is resolved in the following order of precedence:
+
+config.json -> command-line arguments -> environment variables
     
 ### Determine gateway IP
 _tradfri-go_ has no means of finding out the IP of the Gateway. I suggest checking your Router's list of connected devices and try to find an item starting with "GW-".

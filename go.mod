@@ -7,6 +7,7 @@ require (
 	github.com/eriklupander/dtls v0.0.0-20190304211642-b36018226359
 	github.com/go-chi/chi v4.0.2+incompatible
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/spf13/pflag v1.0.2
 	github.com/spf13/viper v1.2.1
 	github.com/stretchr/testify v1.2.2 // indirect
 	golang.org/x/net v0.0.0-20190213061140-3a22650c66bd // indirect

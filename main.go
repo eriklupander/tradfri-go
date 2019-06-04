@@ -26,6 +26,7 @@ func init() {
 	commandFlags.String("get", "", "URL to GET")
 	commandFlags.String("put", "", "URL to PUT")
 	commandFlags.String("payload", "", "payload for PUT")
+	commandFlags.Int("port", 8080, "port of the serverr")
 
 	commandFlags.AddFlagSet(configFlags)
 	commandFlags.Parse(os.Args[1:])
@@ -53,6 +54,7 @@ func main() {
 	get, getErr := commandFlags.GetString("get")
 	put, putErr := commandFlags.GetString("put")
 	payload, _ := commandFlags.GetString("payload")
+	port, _ := commandFlags.GetInt("port")
 
 	// Handle the special authenticate use-case
 	if authenticate {
@@ -64,8 +66,8 @@ func main() {
 
 	// Check running mode...
 	if serverMode {
-		fmt.Println("Running in server mode on :8080")
-		go router.SetupChi(tradfri.NewTradfriClient(gatewayAddress, clientID, psk))
+		fmt.Printf("Running in server mode on :%d\n", port)
+		go router.SetupChi(tradfri.NewTradfriClient(gatewayAddress, clientID, psk), port)
 
 		wg := sync.WaitGroup{}
 		wg.Add(1)

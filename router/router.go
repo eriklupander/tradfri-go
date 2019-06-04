@@ -16,7 +16,7 @@ import (
 var tradfriClient *tradfri.TradfriClient
 
 // SetupChi sets up our HTTP router/muxer using Chi, a pointer to a TradfriClient must be passed.
-func SetupChi(client *tradfri.TradfriClient) {
+func SetupChi(client *tradfri.TradfriClient, port int) {
 	tradfriClient = client
 
 	r := chi.NewRouter()
@@ -52,7 +52,7 @@ func SetupChi(client *tradfri.TradfriClient) {
 	})
 
 	// Blocks here!
-	http.ListenAndServe(":8080", r)
+	http.ListenAndServe(fmt.Sprintf(":%d", port), r)
 }
 
 func setColorXY(w http.ResponseWriter, r *http.Request) {

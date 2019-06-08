@@ -26,7 +26,7 @@ func init() {
 	commandFlags.String("get", "", "URL to GET")
 	commandFlags.String("put", "", "URL to PUT")
 	commandFlags.String("payload", "", "payload for PUT")
-	commandFlags.Int("port", 8080, "port of the serverr")
+	commandFlags.Int("port", 8080, "port of the server")
 
 	commandFlags.AddFlagSet(configFlags)
 	commandFlags.Parse(os.Args[1:])

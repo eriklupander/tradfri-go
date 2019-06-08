@@ -19,6 +19,7 @@ This application is just stitching together the excellent work of [github.com/du
 - https://bitsex.net/software/2017/coap-endpoints-on-ikea-tradfri/
 
 ### Changelog
+- 2019-06-08: Configurable HTTP port by [https://github.com/Mirdinus](Mirdinus)
 - 2019-04-02: Configuration redone by [https://github.com/Hades32](Hades32)
 - 2019-04-01: Fixed issue with -authenticate
 - 2019-03-10: Initial release

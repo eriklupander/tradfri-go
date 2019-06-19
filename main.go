@@ -75,7 +75,7 @@ func main() {
 
 	// Check running mode...
 	if serverMode {
-		fmt.Printf("Running in server mode on :%d\n", port)
+		fmt.Printf("Running in server mode.\nREST: %d\ngRPC: %d", port, grpcPort)
 		tc := tradfri.NewTradfriClient(gatewayAddress, clientID, psk)
 		// REST
 		go router.SetupChi(tc, port)
@@ -160,11 +160,7 @@ func registerGrpcServer(tc *tradfri.TradfriClient, port int) {
 		fmt.Printf("failed to listen on grpc port %d: %v\n", port, err.Error())
 		return
 	}
-	if err := s.Serve(lis); err != nil {
-		fmt.Println("grpc server is not running: ", err.Error())
-		return
-	}
-	fmt.Println("successfully registered grpc server on port ", port)
+	fmt.Println(s.Serve(lis))
 }
 
 func fail(msg string) {

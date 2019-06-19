@@ -17,6 +17,7 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 var configFlags = pflag.NewFlagSet("config", pflag.ExitOnError)
@@ -160,6 +161,7 @@ func registerGrpcServer(tc *tradfri.TradfriClient, port int) {
 		fmt.Printf("failed to listen on grpc port %d: %v\n", port, err.Error())
 		return
 	}
+	reflection.Register(s)
 	fmt.Println(s.Serve(lis))
 }
 

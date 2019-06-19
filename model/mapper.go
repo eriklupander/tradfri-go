@@ -10,7 +10,8 @@ func ToDeviceResponse(device Device) BulbResponse {
 	if device.LightControl != nil && len(device.LightControl) > 0 {
 
 		dr := BulbResponse{
-			DeviceMetadata: DeviceMetadata{Name: device.Name,
+			DeviceMetadata: DeviceMetadata{
+				Name:   device.Name,
 				Id:     device.DeviceId,
 				Type:   device.Metadata.TypeName,
 				Vendor: device.Metadata.Vendor},
@@ -29,6 +30,7 @@ func ToDeviceResponseProto(device Device) *pb.Device {
 	if device.LightControl != nil && len(device.LightControl) > 0 {
 		return &pb.Device{
 			Metadata: &pb.DeviceMetadata{
+				Name:   device.Name,
 				Id:     int32(device.DeviceId),
 				Type:   device.Metadata.TypeName,
 				Vendor: device.Metadata.Vendor,

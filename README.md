@@ -19,6 +19,7 @@ This application is just stitching together the excellent work of [github.com/du
 - https://bitsex.net/software/2017/coap-endpoints-on-ikea-tradfri/
 
 ### Changelog
+- 2019-06-19: gRPC support by [https://github.com/Age15990](https://github.com/Age15990)
 - 2019-06-08: Configurable HTTP port by [https://github.com/Mirdinus](https://github.com/Mirdinus)
 - 2019-04-02: Configuration redone by [https://github.com/Hades32](https://github.com/Hades32)
 - 2019-04-01: Fixed issue with -authenticate
@@ -74,7 +75,7 @@ config.json -> command-line arguments -> environment variables
 _tradfri-go_ has no means of finding out the IP of the Gateway. I suggest checking your Router's list of connected devices and try to find an item starting with "GW-".
 
 ### Running in server mode
-Server mode connects to your gateway and then publishes a really simple RESTful interface for querying your gateway or mutating some state on bulbs etc:
+Server mode connects to your gateway and then publishes a really simple RESTful interface and a gRPC service for querying your gateway or mutating some state on bulbs etc:
 
     ./tradfri-go --server
     
@@ -98,6 +99,31 @@ Now, you can use the simple RESTful API provided by tradfri-go which returns mor
 Or use one of the declarative endpoints to mutate the state of the bulb:
 
     > curl -X PUT -data '{"rgbcolor":"f1e0b5"}' http://localhost:8080/api/device/65538/rgb
+
+If you want to use the gRPC service, implement your client like this:
+
+    var client pb.TradfriServiceClient
+	{
+		conn, err := grpc.Dial("localhost:8081",
+			grpc.WithInsecure(),
+		)
+		if err != nil {
+			log.Fatalf("did not connect: %v", err)
+		}
+		defer conn.Close()
+		client = pb.NewTradfriServiceClient(conn)
+	}
+
+while importing `pb "github.com/eriklupander/tradfri-go/grpc_server/golang"`.
+
+And, as simple as calling every other method in your code, request the server like this:
+
+    resp, err := client.ListGroups(context.Background(), &pb.ListGroupsRequest{})
+
+You can also install `grpcurl` and query the server via the command line:
+
+    > grpcurl -plaintext localhost:8081 grpc_server.TradfriService/ListGroups
+    > grpcurl -plaintext -d '{"id": 65552}' localhost:8081 grpc_server.TradfriService/TurnDeviceOn
     
 Just like the client mode, the application will try to use clientId/PSK from _psk.key_ or using env vars.
 

@@ -1,0 +1,107 @@
+syntax = "proto3";
+
+package grpc_server;
+
+// The tradfri service definition
+service TradfriService {
+  rpc ListGroups (ListGroupsRequest) returns (ListGroupsResponse) {}
+  rpc GetGroup (GetGroupRequest) returns (GetGroupResponse) {}
+
+  rpc ListDevices (ListDevicesRequest) returns (ListDevicesResponse) {}
+  rpc ListDeviceIDs (ListDeviceIDsRequest) returns (ListDeviceIDsResponse) {}
+
+  rpc GetDevice (GetDeviceRequest) returns (GetDeviceResponse) {}
+  rpc ChangeDeviceColor (ChangeDeviceColorRequest) returns (ChangeDeviceColorResponse) {}
+  rpc ChangeDeviceDimming (ChangeDeviceDimmingRequest) returns (ChangeDeviceDimmingResponse) {}
+  rpc TurnDeviceOn (TurnDeviceOnRequest) returns (TurnDeviceOnResponse) {}
+  rpc TurnDeviceOff (TurnDeviceOffRequest) returns (TurnDeviceOffResponse) {}
+}
+
+message DeviceMetadata {
+  int32 id = 1;
+  string name = 2;
+  string vendor = 3;
+  string type = 4;
+}
+
+message Device{
+  DeviceMetadata metadata = 1;
+  int32 dimmer = 2;
+  int32 xcolor = 3;
+  int32 ycolor = 4;
+  string rgb = 5;
+  bool power = 6;
+}
+
+message Group{
+  int32 id = 1;
+  int32 power = 2;
+  string created = 3;
+  repeated int32 devices = 4;
+}
+
+message ListGroupsRequest{}
+
+message ListGroupsResponse{
+  repeated Group groups = 1;
+}
+
+message GetGroupRequest{
+  int32 id = 1;
+}
+
+message GetGroupResponse{
+  Group group = 1;
+}
+
+message ListDevicesRequest{
+  int32 group_id = 1;
+}
+
+message ListDevicesResponse{
+  repeated Device devices = 1;
+}
+
+message ListDeviceIDsRequest{
+  int32 group_id = 1;
+}
+
+message ListDeviceIDsResponse{
+  repeated int32 ids = 1;
+}
+
+message GetDeviceRequest{
+  int32 id = 1;
+}
+
+message GetDeviceResponse{
+  Device device = 1;
+}
+
+message ChangeDeviceColorRequest{
+  int32 id = 1;
+  int32 xcolor = 2;
+  int32 ycolor = 3;
+  string rgb = 4;
+}
+
+message ChangeDeviceColorResponse{}
+
+message ChangeDeviceDimmingRequest{
+  int32 id = 1;
+  int32 value = 2;
+}
+
+message ChangeDeviceDimmingResponse{}
+
+message TurnDeviceOnRequest{
+  int32 id = 1;
+}
+
+message TurnDeviceOnResponse{}
+
+message TurnDeviceOffRequest{
+  int32 id = 1;
+}
+
+message TurnDeviceOffResponse{}

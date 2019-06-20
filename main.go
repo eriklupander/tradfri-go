@@ -2,14 +2,22 @@ package main
 
 import (
 	"fmt"
-	"github.com/eriklupander/tradfri-go/router"
-	"github.com/eriklupander/tradfri-go/tradfri"
-	"github.com/spf13/pflag"
-	"github.com/spf13/viper"
+	"net"
 	"os"
-
 	"sync"
 	"time"
+
+	"github.com/eriklupander/tradfri-go/grpc_server"
+	pb "github.com/eriklupander/tradfri-go/grpc_server/golang"
+	"github.com/eriklupander/tradfri-go/router"
+	"github.com/eriklupander/tradfri-go/tradfri"
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 var configFlags = pflag.NewFlagSet("config", pflag.ExitOnError)
@@ -27,6 +35,7 @@ func init() {
 	commandFlags.String("put", "", "URL to PUT")
 	commandFlags.String("payload", "", "payload for PUT")
 	commandFlags.Int("port", 8080, "port of the server")
+	commandFlags.Int("grpc_port", 8081, "port of the grpc server")
 
 	commandFlags.AddFlagSet(configFlags)
 	commandFlags.Parse(os.Args[1:])
@@ -55,6 +64,7 @@ func main() {
 	put, putErr := commandFlags.GetString("put")
 	payload, _ := commandFlags.GetString("payload")
 	port, _ := commandFlags.GetInt("port")
+	grpcPort, _ := commandFlags.GetInt("grpc_port")
 
 	// Handle the special authenticate use-case
 	if authenticate {
@@ -66,8 +76,12 @@ func main() {
 
 	// Check running mode...
 	if serverMode {
-		fmt.Printf("Running in server mode on :%d\n", port)
-		go router.SetupChi(tradfri.NewTradfriClient(gatewayAddress, clientID, psk), port)
+		fmt.Printf("Running in server mode.\nREST: %d\ngRPC: %d", port, grpcPort)
+		tc := tradfri.NewTradfriClient(gatewayAddress, clientID, psk)
+		// REST
+		go router.SetupChi(tc, port)
+		// Grpc
+		go registerGrpcServer(tc, grpcPort)
 
 		wg := sync.WaitGroup{}
 		wg.Add(1)
@@ -130,6 +144,25 @@ func performTokenExchange(gatewayAddress, clientID, psk string) {
 		fail(err.Error())
 	}
 	fmt.Println("Your configuration including the new PSK and clientID has been written to config.json, keep this file safe!")
+}
+
+func registerGrpcServer(tc *tradfri.TradfriClient, port int) {
+	s := grpc.NewServer(
+		grpc_middleware.WithUnaryServerChain(
+			grpc_logrus.UnaryServerInterceptor(logrus.NewEntry(logrus.StandardLogger())),
+		),
+		grpc_middleware.WithStreamServerChain(
+			grpc_logrus.StreamServerInterceptor(logrus.NewEntry(logrus.StandardLogger())),
+		),
+	)
+	pb.RegisterTradfriServiceServer(s, grpc_server.New(tc))
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+	if err != nil {
+		fmt.Printf("failed to listen on grpc port %d: %v\n", port, err.Error())
+		return
+	}
+	reflection.Register(s)
+	fmt.Println(s.Serve(lis))
 }
 
 func fail(msg string) {

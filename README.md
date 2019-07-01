@@ -1,7 +1,7 @@
 # tradfri-go
 
 [![CircleCI](https://circleci.com/gh/eriklupander/tradfri-go.svg?style=svg)](https://circleci.com/gh/eriklupander/tradfri-go)
-![Go Report Card](https://goreportcard.com/badge/github.com/eriklupander/tradfri-go)
+[![Go Report Card](https://goreportcard.com/badge/github.com/eriklupander/tradfri-go)](https://goreportcard.com/report/github.com/eriklupander/tradfri-go)
 
 Native Go implementation for talking CoAP to a [IKEA Trådfri](https://www.ikea.com/ms/en_US/usearch/?&query=tr%C3%A5dfri) gateway over DTLS 1.2.
 

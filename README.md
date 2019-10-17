@@ -154,4 +154,5 @@ PUT that sets color of the bulb at /15001/65538 to purple and the dimmer to 100:
 The colors possible to set on the bulbs varies. The colors are in the CIE 1931 color space whose x/y values _in theory_ can be set using the 5709 and 5710 codes to values between 0 and 65535. You can't set arbitrary values due to how the CIE 1931 (yes, it's a standard from 1931!) works. Play around with the values, I havn't broken my full-color "TRADFRI bulb E27 CWS opal 600lm" yet...
 
 # LICENSE
+
 Uses MIT license, see [LICENSE](LICENSE)

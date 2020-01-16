@@ -20,6 +20,7 @@ This application is just stitching together the excellent work of [github.com/du
 - https://bitsex.net/software/2017/coap-endpoints-on-ikea-tradfri/
 
 ### Changelog
+- 2020-01-16: Updated logging to use logrus with configurable log level in config.json.
 - 2019-06-19: gRPC support by [https://github.com/Age15990](https://github.com/Age15990)
 - 2019-06-08: Configurable HTTP port by [https://github.com/Mirdinus](https://github.com/Mirdinus)
 - 2019-04-02: Configuration redone by [https://github.com/Hades32](https://github.com/Hades32)
@@ -53,7 +54,8 @@ The generated new PSK and settings used are stored in the current directory in t
       "gateway_address": "192.168.1.19:5684",
       "gateway_ip": "192.168.1.19",
       "pre_shared_key": "the generated psk goes here",
-      "psk": "the generated psk goes here"
+      "psk": "the generated psk goes here",
+      "loglevel":"info"
     }
     
 _tradfri-go_ will try to read _config.json_ when starting up, and will in that case set the required properties accordingly.

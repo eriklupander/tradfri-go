@@ -6,6 +6,7 @@ import (
 	"github.com/dustin/go-coap"
 	"github.com/eriklupander/tradfri-go/dtlscoap"
 	"github.com/eriklupander/tradfri-go/model"
+	"github.com/sirupsen/logrus"
 	"strconv"
 	"strings"
 )
@@ -22,12 +23,12 @@ func NewTradfriClient(gatewayAddress, clientID, psk string) *TradfriClient {
 
 func (tc *TradfriClient) PutDeviceDimming(deviceId string, dimming int) (model.Result, error) {
 	payload := fmt.Sprintf(`{ "3311": [{ "5851": %d }] }`, dimming)
-	fmt.Printf("Payload is: %v", payload)
+	logrus.Infof("Payload is: %v", payload)
 	resp, err := tc.Call(tc.dtlsclient.BuildPUTMessage("/15001/"+deviceId, payload))
 	if err != nil {
 		return model.Result{}, err
 	}
-	fmt.Printf("Response: %+v", resp)
+	logrus.Infof("Response: %+v", resp)
 	return model.Result{Msg: resp.Code.String()}, nil
 }
 
@@ -36,12 +37,12 @@ func (tc *TradfriClient) PutDevicePower(deviceId string, power int) (model.Resul
 		return model.Result{}, fmt.Errorf("Invalid value for setting power state, must be 1 or 0")
 	}
 	payload := fmt.Sprintf(`{ "3311": [{ "5850": %d }] }`, power)
-	fmt.Printf("Payload is: %v", payload)
+	logrus.Infof("Payload is: %v", payload)
 	resp, err := tc.Call(tc.dtlsclient.BuildPUTMessage("/15001/"+deviceId, payload))
 	if err != nil {
 		return model.Result{}, err
 	}
-	fmt.Printf("Response: %+v", resp)
+	logrus.Infof("Response: %+v", resp)
 	return model.Result{Msg: resp.Code.String()}, nil
 }
 
@@ -50,34 +51,34 @@ func (tc *TradfriClient) PutDeviceState(deviceId string, power int, dimmer int, 
 		return model.Result{}, fmt.Errorf("Invalid value for setting power state, must be 1 or 0")
 	}
 	payload := fmt.Sprintf(`{ "3311": [{ "5850": %d, "5851": %d}] }`, power, dimmer) // , "5706": "%s"
-	fmt.Printf("Payload is: %v", payload)
+	logrus.Infof("Payload is: %v", payload)
 	resp, err := tc.Call(tc.dtlsclient.BuildPUTMessage("/15001/"+deviceId, payload))
 	if err != nil {
 		return model.Result{}, err
 	}
-	fmt.Printf("Response: %+v", resp)
+	logrus.Infof("Response: %+v", resp)
 	return model.Result{Msg: resp.Code.String()}, nil
 }
 
 func (tc *TradfriClient) PutDeviceColor(deviceId string, x, y int) (model.Result, error) {
 	payload := fmt.Sprintf(`{ "3311": [ {"5709": %d, "5710": %d}] }`, x, y)
-	fmt.Printf("Payload is: %v", payload)
+	logrus.Infof("Payload is: %v", payload)
 	resp, err := tc.Call(tc.dtlsclient.BuildPUTMessage("/15001/"+deviceId, payload))
 	if err != nil {
 		return model.Result{}, err
 	}
-	fmt.Printf("Response: %+v", resp)
+	logrus.Infof("Response: %+v", resp)
 	return model.Result{Msg: resp.Code.String()}, nil
 }
 
 func (tc *TradfriClient) PutDeviceColorRGB(deviceId, rgb string) (model.Result, error) {
 	payload := fmt.Sprintf(`{ "3311": [ {"5706": "%s"}] }`, rgb)
-	fmt.Printf("Payload is: %v", payload)
+	logrus.Infof("Payload is: %v", payload)
 	resp, err := tc.Call(tc.dtlsclient.BuildPUTMessage("/15001/"+deviceId, payload))
 	if err != nil {
 		return model.Result{}, err
 	}
-	fmt.Printf("Response: %+v", resp)
+	logrus.Infof("Response: %+v", resp)
 	return model.Result{Msg: resp.Code.String()}, nil
 }
 
@@ -86,14 +87,14 @@ func (tc *TradfriClient) ListGroups() ([]model.Group, error) {
 
 	resp, err := tc.Call(tc.dtlsclient.BuildGETMessage("/15004"))
 	if err != nil {
-		fmt.Println("Unable to call Trådfri: " + err.Error())
+		logrus.Info("Unable to call Trådfri: " + err.Error())
 		return groups, err
 	}
 
 	groupIds := make([]int, 0)
 	err = json.Unmarshal(resp.Payload, &groupIds)
 	if err != nil {
-		fmt.Println("Unable to parse groups list into JSON: " + err.Error())
+		logrus.Info("Unable to parse groups list into JSON: " + err.Error())
 		return groups, err
 	}
 

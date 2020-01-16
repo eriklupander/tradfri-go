@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net"
 	"os"
 	"sync"
@@ -24,10 +25,12 @@ var configFlags = pflag.NewFlagSet("config", pflag.ExitOnError)
 var commandFlags = pflag.NewFlagSet("commands", pflag.ExitOnError)
 
 func init() {
+
 	configFlags.String("gateway_ip", "", "ip to your gateway. No protocol or port here!")
 	configFlags.String("gateway_address", "", "address to your gateway. Including port here!")
 	configFlags.String("psk", "", "Pre-shared key on bottom of Gateway")
 	configFlags.String("client_id", "", "Your client id, make something up or use the NNN-NNN-NNN on the bottom of your Gateway")
+	configFlags.String("loglevel", "info", "log leve. Allowed values: fatal, error, warn, info, debug, trace")
 
 	commandFlags.Bool("server", false, "Start in server mode?")
 	commandFlags.Bool("authenticate", false, "Perform PSK exchange")
@@ -45,13 +48,30 @@ func init() {
 	viper.AddConfigPath(".") // e.g. reads ./config.json or config.yaml
 	err := viper.ReadInConfig()
 	if err != nil {
-		fmt.Println(err)
-		fmt.Println("You probably have to run --authenticate first")
+		logrus.Info(err.Error())
+		logrus.Info("You probably have to run --authenticate first")
 	}
 	viper.RegisterAlias("pre_shared_key", "psk")
 }
 
 func main() {
+	// configure logging
+	levelStr := viper.GetString("loglevel")
+	if levelStr == "" {
+		levelStr = "info"
+	}
+	fmt.Printf("Using loglevel: %v", levelStr)
+	level, err := logrus.ParseLevel(levelStr)
+	if err != nil {
+		fmt.Println("invalid loglevel")
+		os.Exit(1)
+	}
+	logrus.SetLevel(level)
+	logrus.SetFormatter(&logrus.TextFormatter{
+		FullTimestamp: true,
+	})
+	log.SetOutput(logrus.StandardLogger().Out)
+
 	gatewayAddress := viper.GetString("gateway_address")
 	if gatewayAddress == "" {
 		gatewayAddress = viper.GetString("gateway_ip") + ":5684"
@@ -76,7 +96,10 @@ func main() {
 
 	// Check running mode...
 	if serverMode {
-		fmt.Printf("Running in server mode.\nREST: %d\ngRPC: %d", port, grpcPort)
+		logrus.Info("Running in server mode")
+		logrus.Infof("REST: %d", port)
+		logrus.Infof("gRPC: %d", grpcPort)
+
 		tc := tradfri.NewTradfriClient(gatewayAddress, clientID, psk)
 		// REST
 		go router.SetupChi(tc, port)
@@ -90,12 +113,12 @@ func main() {
 		// client mode
 		if getErr == nil && get != "" {
 			resp, _ := tradfri.NewTradfriClient(gatewayAddress, clientID, psk).Get(get)
-			fmt.Printf("%v", string(resp.Payload))
+			logrus.Infof("%v", string(resp.Payload))
 		} else if putErr == nil && put != "" {
 			resp, _ := tradfri.NewTradfriClient(gatewayAddress, clientID, psk).Put(put, payload)
-			fmt.Printf("%v", string(resp.Payload))
+			logrus.Infof("%v", string(resp.Payload))
 		} else {
-			fmt.Println("No client operation was specified, supported one(s) are: get, put, authenticate")
+			logrus.Info("No client operation was specified, supported one(s) are: get, put, authenticate")
 		}
 	}
 
@@ -123,7 +146,7 @@ func performTokenExchange(gatewayAddress, clientID, psk string) {
 	go func() {
 		select {
 		case <-time.After(time.Second * 5):
-			fmt.Println("(Please note that the key exchange may appear to be stuck at \"Connecting to peer at\" if the PSK from the bottom of your Gateway is not entered correctly.)")
+			logrus.Info("(Please note that the key exchange may appear to be stuck at \"Connecting to peer at\" if the PSK from the bottom of your Gateway is not entered correctly.)")
 		case <-done:
 		}
 	}()
@@ -143,7 +166,7 @@ func performTokenExchange(gatewayAddress, clientID, psk string) {
 	if err != nil {
 		fail(err.Error())
 	}
-	fmt.Println("Your configuration including the new PSK and clientID has been written to config.json, keep this file safe!")
+	logrus.Info("Your configuration including the new PSK and clientID has been written to config.json, keep this file safe!")
 }
 
 func registerGrpcServer(tc *tradfri.TradfriClient, port int) {
@@ -158,14 +181,14 @@ func registerGrpcServer(tc *tradfri.TradfriClient, port int) {
 	pb.RegisterTradfriServiceServer(s, grpc_server.New(tc))
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
-		fmt.Printf("failed to listen on grpc port %d: %v\n", port, err.Error())
+		logrus.Infof("failed to listen on grpc port %d: %v\n", port, err.Error())
 		return
 	}
 	reflection.Register(s)
-	fmt.Println(s.Serve(lis))
+	logrus.Info(s.Serve(lis))
 }
 
 func fail(msg string) {
-	fmt.Println(msg)
+	logrus.Info(msg)
 	os.Exit(1)
 }

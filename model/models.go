@@ -99,7 +99,7 @@ type DeviceMetadata struct {
 
 type PowerPlugResponse struct {
 	DeviceMetadata DeviceMetadata `json:"deviceMetadata"`
-	Power        bool           `json:"power"`
+	Power          bool           `json:"power"`
 }
 
 type BulbResponse struct {
@@ -108,7 +108,7 @@ type BulbResponse struct {
 	CIE_1931_X     int            `json:"xcolor"`
 	CIE_1931_Y     int            `json:"ycolor"`
 	RGB            string         `json:"rgbcolor"`
-	Power       bool           `json:"power"`
+	Power          bool           `json:"power"`
 }
 
 type Result struct {
@@ -122,10 +122,10 @@ type TokenExchange struct {
 
 // REST API structs
 type GroupResponse struct {
-	Id int `json:"id"`
-	Power int `json:"power"`
-	Created string `json:"created"`
-	DeviceList []int `json:"deviceList"`
+	Id         int    `json:"id"`
+	Power      int    `json:"power"`
+	Created    string `json:"created"`
+	DeviceList []int  `json:"deviceList"`
 }
 
 type RgbColorRequest struct {

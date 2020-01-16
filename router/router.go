@@ -7,6 +7,7 @@ import (
 	"github.com/eriklupander/tradfri-go/tradfri"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
+	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -18,13 +19,13 @@ var tradfriClient *tradfri.TradfriClient
 // SetupChi sets up our HTTP router/muxer using Chi, a pointer to a TradfriClient must be passed.
 func SetupChi(client *tradfri.TradfriClient, port int) {
 	tradfriClient = client
-
+	logger := middleware.RequestLogger(&middleware.DefaultLogFormatter{Logger: logrus.StandardLogger(), NoColor: false})
 	r := chi.NewRouter()
 
 	// A good base middleware stack
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
-	r.Use(middleware.Logger)
+	r.Use(logger)
 	r.Use(middleware.Recoverer)
 
 	// Set a timeout value on the request context (ctx), that will signal
@@ -159,7 +160,7 @@ func respondWithError(w http.ResponseWriter, code int, msg string) {
 // respondWithJSON write json response format
 func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 	response, _ := json.Marshal(payload)
-	fmt.Println(payload)
+	logrus.Info(payload)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 	w.Write(response)

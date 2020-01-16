@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/eriklupander/dtls"
 	"log"
 	"net"
 	"os"
@@ -60,7 +61,7 @@ func main() {
 	if levelStr == "" {
 		levelStr = "info"
 	}
-	fmt.Printf("Using loglevel: %v", levelStr)
+	fmt.Printf("Using loglevel: %v\n", levelStr)
 	level, err := logrus.ParseLevel(levelStr)
 	if err != nil {
 		fmt.Println("invalid loglevel")
@@ -71,6 +72,19 @@ func main() {
 		FullTimestamp: true,
 	})
 	log.SetOutput(logrus.StandardLogger().Out)
+	dtls.SetLogFunc(func(ts time.Time, level string, peer string, msg string) {
+		switch level {
+		case "error":
+			logrus.WithField("level", level).WithField("peer", peer).Error(msg)
+		case "warn":
+			logrus.WithField("level", level).WithField("peer", peer).Warn(msg)
+		case "info":
+			logrus.WithField("level", level).WithField("peer", peer).Info(msg)
+		case "debug":
+			logrus.WithField("level", level).WithField("peer", peer).Debug(msg)
+		}
+	})
+	dtls.SetLogLevel(resolveDTLSLogLevel(levelStr))
 
 	gatewayAddress := viper.GetString("gateway_address")
 	if gatewayAddress == "" {
@@ -169,7 +183,7 @@ func performTokenExchange(gatewayAddress, clientID, psk string) {
 	logrus.Info("Your configuration including the new PSK and clientID has been written to config.json, keep this file safe!")
 }
 
-func registerGrpcServer(tc *tradfri.TradfriClient, port int) {
+func registerGrpcServer(tc *tradfri.Client, port int) {
 	s := grpc.NewServer(
 		grpc_middleware.WithUnaryServerChain(
 			grpc_logrus.UnaryServerInterceptor(logrus.NewEntry(logrus.StandardLogger())),
@@ -191,4 +205,23 @@ func registerGrpcServer(tc *tradfri.TradfriClient, port int) {
 func fail(msg string) {
 	logrus.Info(msg)
 	os.Exit(1)
+}
+
+// resolveDTLSLogLevel maps our logrus levels to the ones supported by the DTLS library.
+func resolveDTLSLogLevel(level string) string {
+	switch level {
+	case "fatal":
+		fallthrough
+	case "error":
+		return dtls.LogLevelError
+	case "warn":
+		return dtls.LogLevelWarn
+	case "info":
+		return dtls.LogLevelInfo
+	case "debug":
+		fallthrough
+	case "trace":
+		return dtls.LogLevelDebug
+	}
+	return "info"
 }

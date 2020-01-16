@@ -13,14 +13,14 @@ import (
 )
 
 // New initialize a new tradfri server
-func New(tradfriClient *tradfri.TradfriClient) pb.TradfriServiceServer {
+func New(tradfriClient *tradfri.Client) pb.TradfriServiceServer {
 	return &server{
 		tradfriClient: tradfriClient,
 	}
 }
 
 type server struct {
-	tradfriClient *tradfri.TradfriClient
+	tradfriClient *tradfri.Client
 }
 
 func (s *server) ListGroups(ctx context.Context, r *pb.ListGroupsRequest) (*pb.ListGroupsResponse, error) {

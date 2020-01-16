@@ -14,10 +14,10 @@ import (
 	"time"
 )
 
-var tradfriClient *tradfri.TradfriClient
+var tradfriClient *tradfri.Client
 
-// SetupChi sets up our HTTP router/muxer using Chi, a pointer to a TradfriClient must be passed.
-func SetupChi(client *tradfri.TradfriClient, port int) {
+// SetupChi sets up our HTTP router/muxer using Chi, a pointer to a Client must be passed.
+func SetupChi(client *tradfri.Client, port int) {
 	tradfriClient = client
 	logger := middleware.RequestLogger(&middleware.DefaultLogFormatter{Logger: logrus.StandardLogger(), NoColor: false})
 	r := chi.NewRouter()
@@ -71,7 +71,10 @@ func setColorRGBHex(w http.ResponseWriter, r *http.Request) {
 	body, _ := ioutil.ReadAll(r.Body)
 
 	rgbColorRequest := model.RgbColorRequest{}
-	err := json.Unmarshal(body, &rgbColorRequest)
+	if err := json.Unmarshal(body, &rgbColorRequest); err != nil {
+		badRequest(w, err)
+		return
+	}
 	result, err := tradfriClient.PutDeviceColorRGB(deviceId, rgbColorRequest.RGBcolor)
 	respond(w, result, err)
 }
@@ -81,7 +84,10 @@ func setDimming(w http.ResponseWriter, r *http.Request) {
 	body, _ := ioutil.ReadAll(r.Body)
 
 	dimmingRequest := model.DimmingRequest{}
-	err := json.Unmarshal(body, &dimmingRequest)
+	if err := json.Unmarshal(body, &dimmingRequest); err != nil {
+		badRequest(w, err)
+		return
+	}
 	res, err := tradfriClient.PutDeviceDimming(deviceId, dimmingRequest.Dimming)
 	respond(w, res, err)
 }
@@ -91,7 +97,10 @@ func setPower(w http.ResponseWriter, r *http.Request) {
 	body, _ := ioutil.ReadAll(r.Body)
 
 	powerRequest := model.PowerRequest{}
-	err := json.Unmarshal(body, &powerRequest)
+	if err := json.Unmarshal(body, &powerRequest); err != nil {
+		badRequest(w, err)
+		return
+	}
 	res, err := tradfriClient.PutDevicePower(deviceId, powerRequest.Power)
 	respond(w, res, err)
 }
@@ -101,7 +110,10 @@ func setState(w http.ResponseWriter, r *http.Request) {
 	body, _ := ioutil.ReadAll(r.Body)
 
 	stateReq := model.StateRequest{}
-	err := json.Unmarshal(body, &stateReq)
+	if err := json.Unmarshal(body, &stateReq); err != nil {
+		badRequest(w, err)
+		return
+	}
 	res, err := tradfriClient.PutDeviceState(deviceId, stateReq.Power, stateReq.Dimmer, stateReq.RGBcolor)
 	respond(w, res, err)
 }
@@ -145,6 +157,11 @@ func respond(w http.ResponseWriter, payload interface{}, err error) {
 	} else {
 		respondWithJSON(w, 200, payload)
 	}
+}
+
+func badRequest(w http.ResponseWriter, err error) {
+	logrus.WithError(err).Error("error processing request body")
+	respondWithError(w, http.StatusBadRequest, err.Error())
 }
 
 func getDevice(w http.ResponseWriter, r *http.Request) {

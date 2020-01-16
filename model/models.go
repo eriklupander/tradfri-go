@@ -1,9 +1,6 @@
 package model
 
-type Configuration struct {
-	ID string `json:"id"`
-}
-
+// Device defines (with JSON tags) a IKEA trådfri device of some kind
 type Device struct {
 	Metadata struct {
 		Vendor   string `json:"0"`
@@ -31,6 +28,7 @@ type Device struct {
 	Num9054  int    `json:"9054"`
 }
 
+// Group defines (with JSON tags) a IKEA trådfri Group.
 type Group struct {
 	Power    int    `json:"5850"`
 	Num5851  int    `json:"5851"`
@@ -46,6 +44,7 @@ type Group struct {
 	Num9108 int `json:"9108"`
 }
 
+// RemoteControl defines (with JSON tags) a IKEA remote control.
 type RemoteControl struct {
 	Metadata struct {
 		Num0 string `json:"0"`
@@ -67,6 +66,7 @@ type RemoteControl struct {
 	} `json:"15009"`
 }
 
+// ControlOutlet defines (with JSON tags) a IKEA control outlet.
 type ControlOutlet struct {
 	Metadata struct {
 		Num0 string `json:"0"`
@@ -90,6 +90,7 @@ type ControlOutlet struct {
 	Num9084 string `json:"9084"`
 }
 
+// DeviceMetadata defines (with JSON tags) common device metadata. Typically embedded in other structs.
 type DeviceMetadata struct {
 	Id     int    `json:"id"`
 	Name   string `json:"name"`
@@ -97,11 +98,13 @@ type DeviceMetadata struct {
 	Type   string `json:"type"`
 }
 
+// PowerPlugResponse is the response from a power plug device GET.
 type PowerPlugResponse struct {
 	DeviceMetadata DeviceMetadata `json:"deviceMetadata"`
 	Power          bool           `json:"power"`
 }
 
+// BulbResponse is the response from a light bulb GET.
 type BulbResponse struct {
 	DeviceMetadata DeviceMetadata `json:"deviceMetadata"`
 	Dimmer         int            `json:"dimmer"`
@@ -128,16 +131,22 @@ type GroupResponse struct {
 	DeviceList []int  `json:"deviceList"`
 }
 
+// RgbColorRequest allows (trying to) set a bulb color using classic hex RGB string.
 type RgbColorRequest struct {
 	RGBcolor string `json:"rgbcolor"`
 }
+
+// DimmingRequest allows setting the dimmer level from 0-255.
 type DimmingRequest struct {
 	Dimming int `json:"dimming"`
 }
+
+// PowerRequest contains a Power state int, 1 == on, 0 == off.
 type PowerRequest struct {
 	Power int `json:"power"`
 }
 
+// StateRequest allows setting both color, dimmer and power setting in a single PUT.
 type StateRequest struct {
 	RGBcolor string `json:"rgbcolor"`
 	Dimmer   int    `json:"dimmer"`

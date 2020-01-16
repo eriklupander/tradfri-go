@@ -1,9 +1,8 @@
 package model
 
 import (
-	"time"
-
 	pb "github.com/eriklupander/tradfri-go/grpc_server/golang"
+	"time"
 )
 
 func ToDeviceResponse(device Device) BulbResponse {

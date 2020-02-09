@@ -1,4 +1,4 @@
-# tradfri-go
+# tradfri-go(-blind-server)
 
 [![CircleCI](https://circleci.com/gh/eriklupander/tradfri-go.svg?style=svg)](https://circleci.com/gh/eriklupander/tradfri-go)
 [![Go Report Card](https://goreportcard.com/badge/github.com/eriklupander/tradfri-go)](https://goreportcard.com/report/github.com/eriklupander/tradfri-go)
@@ -27,21 +27,24 @@ https://github.com/eriklupander/tradfri-go
 - 2019-03-10: Initial release
 
 ### Compatibility
-tradfri-go has been tested against the following DTLS-enabled COAP servers:
+tradfri-go(-blind-server) has been tested against the following DTLS-enabled COAP servers:
 
 - IKEA Trådfri Gateway using PSK after token exchange: OK
-- Californicum COAP server on Scandium DTLS: OK
 
 ### Building
 Uses go modules.
 
     export GO111MODULE=on
     go build -o tradfri-go
-    
+
+or Use a golang:1.13 docker container to build tradfri-go(-blind-server)
+
+    ./build.sh .
+
 ### PSK exchange
 The Trådfri gateway has its Pre-shared key (PSK) printed on the bottom sticker. However, that PSK is only used for making an initial exchange where you specify a unique _Client_id_ and the original PSK, and you get a new PSK in return that you use for subsequent interactions with the gateway.
 
-_tradfri-go_ supports this operation out of the box using the following command:
+_tradfri-go(-blind-server)_ supports this operation out of the box using the following command:
 
     > ./tradfri-go --authenticate --client_id=MyCoolID --psk=TheKeyAtTheBottomOfYourGateway --gateway_ip=<ip to your gateway>
 
@@ -57,7 +60,7 @@ The generated new PSK and settings used are stored in the current directory in t
       "loglevel":"info"
     }
     
-_tradfri-go_ will try to read _config.json_ when starting up, and will in that case set the required properties accordingly.
+_tradfri-go(-blind-server)_ will try to read _config.json_ when starting up, and will in that case set the required properties accordingly.
 
 If you don't feel like using _config.json_, you can either specify the configuration as command-line flags or using the following environment variables:
 
@@ -74,12 +77,12 @@ Configuration is resolved in the following order of precedence:
 config.json -> command-line arguments -> environment variables
     
 ### Determine gateway IP
-_tradfri-go_ has no means of finding out the IP of the Gateway. I suggest checking your Router's list of connected devices and try to find an item starting with "GW-".
+_tradfri-go(-blind-server)_ has no means of finding out the IP of the Gateway. I suggest checking your Router's list of connected devices and try to find an item starting with "GW-".
 
 ### Running in server mode
 Server mode connects to your gateway and then publishes a really simple RESTful interface and a gRPC service for querying your gateway or mutating some state on blinds:
 
-    ./tradfri-go --server
+    docker-compose up -d
     
 Now, you can use the simple RESTful API provided by tradfri-go which returns more human-readable responses than the raw CoAP responses:
 
@@ -87,7 +90,7 @@ Now, you can use the simple RESTful API provided by tradfri-go which returns mor
     {
       "deviceMetadata": {
         "id": 65541,
-        "name": "left",
+        "name": "Living Room Left Blind",
         "vendor": "IKEA of Sweden",
         "type": "FYRTUR block-out roller blind",
         "battery": 90

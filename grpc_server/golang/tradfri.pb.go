@@ -27,6 +27,7 @@ type DeviceMetadata struct {
 	Name                 string   `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	Vendor               string   `protobuf:"bytes,3,opt,name=vendor,proto3" json:"vendor,omitempty"`
 	Type                 string   `protobuf:"bytes,4,opt,name=type,proto3" json:"type,omitempty"`
+	Battery              int      `protobuf:"bytes,10,opt,name=battery,proto3" json:"battery,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -85,13 +86,16 @@ func (m *DeviceMetadata) GetType() string {
 	return ""
 }
 
+func (m *DeviceMetadata) GetBattery() int {
+	if m != nil {
+		return m.Battery
+	}
+	return 0
+}
+
 type Device struct {
 	Metadata             *DeviceMetadata `protobuf:"bytes,1,opt,name=metadata,proto3" json:"metadata,omitempty"`
-	Dimmer               int32           `protobuf:"varint,2,opt,name=dimmer,proto3" json:"dimmer,omitempty"`
-	Xcolor               int32           `protobuf:"varint,3,opt,name=xcolor,proto3" json:"xcolor,omitempty"`
-	Ycolor               int32           `protobuf:"varint,4,opt,name=ycolor,proto3" json:"ycolor,omitempty"`
-	Rgb                  string          `protobuf:"bytes,5,opt,name=rgb,proto3" json:"rgb,omitempty"`
-	Power                bool            `protobuf:"varint,6,opt,name=power,proto3" json:"power,omitempty"`
+	Position             float32         `protobuf:"varint,2,opt,name=position,proto3" json:"position,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}        `json:"-"`
 	XXX_unrecognized     []byte          `json:"-"`
 	XXX_sizecache        int32           `json:"-"`
@@ -129,44 +133,15 @@ func (m *Device) GetMetadata() *DeviceMetadata {
 	return nil
 }
 
-func (m *Device) GetDimmer() int32 {
+func (m *Device) GetPosition() float32 {
 	if m != nil {
-		return m.Dimmer
+		return m.Position
 	}
 	return 0
-}
-
-func (m *Device) GetXcolor() int32 {
-	if m != nil {
-		return m.Xcolor
-	}
-	return 0
-}
-
-func (m *Device) GetYcolor() int32 {
-	if m != nil {
-		return m.Ycolor
-	}
-	return 0
-}
-
-func (m *Device) GetRgb() string {
-	if m != nil {
-		return m.Rgb
-	}
-	return ""
-}
-
-func (m *Device) GetPower() bool {
-	if m != nil {
-		return m.Power
-	}
-	return false
 }
 
 type Group struct {
 	Id                   int32    `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Power                int32    `protobuf:"varint,2,opt,name=power,proto3" json:"power,omitempty"`
 	Created              string   `protobuf:"bytes,3,opt,name=created,proto3" json:"created,omitempty"`
 	Devices              []int32  `protobuf:"varint,4,rep,packed,name=devices,proto3" json:"devices,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -202,13 +177,6 @@ var xxx_messageInfo_Group proto.InternalMessageInfo
 func (m *Group) GetId() int32 {
 	if m != nil {
 		return m.Id
-	}
-	return 0
-}
-
-func (m *Group) GetPower() int32 {
-	if m != nil {
-		return m.Power
 	}
 	return 0
 }
@@ -609,101 +577,7 @@ func (m *GetDeviceResponse) GetDevice() *Device {
 	return nil
 }
 
-type ChangeDeviceColorRequest struct {
-	Id                   int32    `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Xcolor               int32    `protobuf:"varint,2,opt,name=xcolor,proto3" json:"xcolor,omitempty"`
-	Ycolor               int32    `protobuf:"varint,3,opt,name=ycolor,proto3" json:"ycolor,omitempty"`
-	Rgb                  string   `protobuf:"bytes,4,opt,name=rgb,proto3" json:"rgb,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *ChangeDeviceColorRequest) Reset()         { *m = ChangeDeviceColorRequest{} }
-func (m *ChangeDeviceColorRequest) String() string { return proto.CompactTextString(m) }
-func (*ChangeDeviceColorRequest) ProtoMessage()    {}
-func (*ChangeDeviceColorRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7f669820b67678c6, []int{13}
-}
-
-func (m *ChangeDeviceColorRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_ChangeDeviceColorRequest.Unmarshal(m, b)
-}
-func (m *ChangeDeviceColorRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_ChangeDeviceColorRequest.Marshal(b, m, deterministic)
-}
-func (m *ChangeDeviceColorRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ChangeDeviceColorRequest.Merge(m, src)
-}
-func (m *ChangeDeviceColorRequest) XXX_Size() int {
-	return xxx_messageInfo_ChangeDeviceColorRequest.Size(m)
-}
-func (m *ChangeDeviceColorRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_ChangeDeviceColorRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_ChangeDeviceColorRequest proto.InternalMessageInfo
-
-func (m *ChangeDeviceColorRequest) GetId() int32 {
-	if m != nil {
-		return m.Id
-	}
-	return 0
-}
-
-func (m *ChangeDeviceColorRequest) GetXcolor() int32 {
-	if m != nil {
-		return m.Xcolor
-	}
-	return 0
-}
-
-func (m *ChangeDeviceColorRequest) GetYcolor() int32 {
-	if m != nil {
-		return m.Ycolor
-	}
-	return 0
-}
-
-func (m *ChangeDeviceColorRequest) GetRgb() string {
-	if m != nil {
-		return m.Rgb
-	}
-	return ""
-}
-
-type ChangeDeviceColorResponse struct {
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *ChangeDeviceColorResponse) Reset()         { *m = ChangeDeviceColorResponse{} }
-func (m *ChangeDeviceColorResponse) String() string { return proto.CompactTextString(m) }
-func (*ChangeDeviceColorResponse) ProtoMessage()    {}
-func (*ChangeDeviceColorResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7f669820b67678c6, []int{14}
-}
-
-func (m *ChangeDeviceColorResponse) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_ChangeDeviceColorResponse.Unmarshal(m, b)
-}
-func (m *ChangeDeviceColorResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_ChangeDeviceColorResponse.Marshal(b, m, deterministic)
-}
-func (m *ChangeDeviceColorResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ChangeDeviceColorResponse.Merge(m, src)
-}
-func (m *ChangeDeviceColorResponse) XXX_Size() int {
-	return xxx_messageInfo_ChangeDeviceColorResponse.Size(m)
-}
-func (m *ChangeDeviceColorResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_ChangeDeviceColorResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_ChangeDeviceColorResponse proto.InternalMessageInfo
-
-type ChangeDeviceDimmingRequest struct {
+type ChangeDevicePositioningRequest struct {
 	Id                   int32    `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Value                int32    `protobuf:"varint,2,opt,name=value,proto3" json:"value,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -711,215 +585,75 @@ type ChangeDeviceDimmingRequest struct {
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *ChangeDeviceDimmingRequest) Reset()         { *m = ChangeDeviceDimmingRequest{} }
-func (m *ChangeDeviceDimmingRequest) String() string { return proto.CompactTextString(m) }
-func (*ChangeDeviceDimmingRequest) ProtoMessage()    {}
-func (*ChangeDeviceDimmingRequest) Descriptor() ([]byte, []int) {
+func (m *ChangeDevicePositioningRequest) Reset()         { *m = ChangeDevicePositioningRequest{} }
+func (m *ChangeDevicePositioningRequest) String() string { return proto.CompactTextString(m) }
+func (*ChangeDevicePositioningRequest) ProtoMessage()    {}
+func (*ChangeDevicePositioningRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_7f669820b67678c6, []int{15}
 }
 
-func (m *ChangeDeviceDimmingRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_ChangeDeviceDimmingRequest.Unmarshal(m, b)
+func (m *ChangeDevicePositioningRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ChangeDevicePositioningRequest.Unmarshal(m, b)
 }
-func (m *ChangeDeviceDimmingRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_ChangeDeviceDimmingRequest.Marshal(b, m, deterministic)
+func (m *ChangeDevicePositioningRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ChangeDevicePositioningRequest.Marshal(b, m, deterministic)
 }
-func (m *ChangeDeviceDimmingRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ChangeDeviceDimmingRequest.Merge(m, src)
+func (m *ChangeDevicePositioningRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ChangeDevicePositioningRequest.Merge(m, src)
 }
-func (m *ChangeDeviceDimmingRequest) XXX_Size() int {
-	return xxx_messageInfo_ChangeDeviceDimmingRequest.Size(m)
+func (m *ChangeDevicePositioningRequest) XXX_Size() int {
+	return xxx_messageInfo_ChangeDevicePositioningRequest.Size(m)
 }
-func (m *ChangeDeviceDimmingRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_ChangeDeviceDimmingRequest.DiscardUnknown(m)
+func (m *ChangeDevicePositioningRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_ChangeDevicePositioningRequest.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_ChangeDeviceDimmingRequest proto.InternalMessageInfo
+var xxx_messageInfo_ChangeDevicePositioningRequest proto.InternalMessageInfo
 
-func (m *ChangeDeviceDimmingRequest) GetId() int32 {
+func (m *ChangeDevicePositioningRequest) GetId() int32 {
 	if m != nil {
 		return m.Id
 	}
 	return 0
 }
 
-func (m *ChangeDeviceDimmingRequest) GetValue() int32 {
+func (m *ChangeDevicePositioningRequest) GetValue() int32 {
 	if m != nil {
 		return m.Value
 	}
 	return 0
 }
 
-type ChangeDeviceDimmingResponse struct {
+type ChangeDevicePositioningResponse struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *ChangeDeviceDimmingResponse) Reset()         { *m = ChangeDeviceDimmingResponse{} }
-func (m *ChangeDeviceDimmingResponse) String() string { return proto.CompactTextString(m) }
-func (*ChangeDeviceDimmingResponse) ProtoMessage()    {}
-func (*ChangeDeviceDimmingResponse) Descriptor() ([]byte, []int) {
+func (m *ChangeDevicePositioningResponse) Reset()         { *m = ChangeDevicePositioningResponse{} }
+func (m *ChangeDevicePositioningResponse) String() string { return proto.CompactTextString(m) }
+func (*ChangeDevicePositioningResponse) ProtoMessage()    {}
+func (*ChangeDevicePositioningResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_7f669820b67678c6, []int{16}
 }
 
-func (m *ChangeDeviceDimmingResponse) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_ChangeDeviceDimmingResponse.Unmarshal(m, b)
+func (m *ChangeDevicePositioningResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ChangeDevicePositioningResponse.Unmarshal(m, b)
 }
-func (m *ChangeDeviceDimmingResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_ChangeDeviceDimmingResponse.Marshal(b, m, deterministic)
+func (m *ChangeDevicePositioningResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ChangeDevicePositioningResponse.Marshal(b, m, deterministic)
 }
-func (m *ChangeDeviceDimmingResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ChangeDeviceDimmingResponse.Merge(m, src)
+func (m *ChangeDevicePositioningResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ChangeDevicePositioningResponse.Merge(m, src)
 }
-func (m *ChangeDeviceDimmingResponse) XXX_Size() int {
-	return xxx_messageInfo_ChangeDeviceDimmingResponse.Size(m)
+func (m *ChangeDevicePositioningResponse) XXX_Size() int {
+	return xxx_messageInfo_ChangeDevicePositioningResponse.Size(m)
 }
-func (m *ChangeDeviceDimmingResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_ChangeDeviceDimmingResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_ChangeDeviceDimmingResponse proto.InternalMessageInfo
-
-type TurnDeviceOnRequest struct {
-	Id                   int32    `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+func (m *ChangeDevicePositioningResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_ChangeDevicePositioningResponse.DiscardUnknown(m)
 }
 
-func (m *TurnDeviceOnRequest) Reset()         { *m = TurnDeviceOnRequest{} }
-func (m *TurnDeviceOnRequest) String() string { return proto.CompactTextString(m) }
-func (*TurnDeviceOnRequest) ProtoMessage()    {}
-func (*TurnDeviceOnRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7f669820b67678c6, []int{17}
-}
-
-func (m *TurnDeviceOnRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_TurnDeviceOnRequest.Unmarshal(m, b)
-}
-func (m *TurnDeviceOnRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_TurnDeviceOnRequest.Marshal(b, m, deterministic)
-}
-func (m *TurnDeviceOnRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_TurnDeviceOnRequest.Merge(m, src)
-}
-func (m *TurnDeviceOnRequest) XXX_Size() int {
-	return xxx_messageInfo_TurnDeviceOnRequest.Size(m)
-}
-func (m *TurnDeviceOnRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_TurnDeviceOnRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_TurnDeviceOnRequest proto.InternalMessageInfo
-
-func (m *TurnDeviceOnRequest) GetId() int32 {
-	if m != nil {
-		return m.Id
-	}
-	return 0
-}
-
-type TurnDeviceOnResponse struct {
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *TurnDeviceOnResponse) Reset()         { *m = TurnDeviceOnResponse{} }
-func (m *TurnDeviceOnResponse) String() string { return proto.CompactTextString(m) }
-func (*TurnDeviceOnResponse) ProtoMessage()    {}
-func (*TurnDeviceOnResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7f669820b67678c6, []int{18}
-}
-
-func (m *TurnDeviceOnResponse) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_TurnDeviceOnResponse.Unmarshal(m, b)
-}
-func (m *TurnDeviceOnResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_TurnDeviceOnResponse.Marshal(b, m, deterministic)
-}
-func (m *TurnDeviceOnResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_TurnDeviceOnResponse.Merge(m, src)
-}
-func (m *TurnDeviceOnResponse) XXX_Size() int {
-	return xxx_messageInfo_TurnDeviceOnResponse.Size(m)
-}
-func (m *TurnDeviceOnResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_TurnDeviceOnResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_TurnDeviceOnResponse proto.InternalMessageInfo
-
-type TurnDeviceOffRequest struct {
-	Id                   int32    `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *TurnDeviceOffRequest) Reset()         { *m = TurnDeviceOffRequest{} }
-func (m *TurnDeviceOffRequest) String() string { return proto.CompactTextString(m) }
-func (*TurnDeviceOffRequest) ProtoMessage()    {}
-func (*TurnDeviceOffRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7f669820b67678c6, []int{19}
-}
-
-func (m *TurnDeviceOffRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_TurnDeviceOffRequest.Unmarshal(m, b)
-}
-func (m *TurnDeviceOffRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_TurnDeviceOffRequest.Marshal(b, m, deterministic)
-}
-func (m *TurnDeviceOffRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_TurnDeviceOffRequest.Merge(m, src)
-}
-func (m *TurnDeviceOffRequest) XXX_Size() int {
-	return xxx_messageInfo_TurnDeviceOffRequest.Size(m)
-}
-func (m *TurnDeviceOffRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_TurnDeviceOffRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_TurnDeviceOffRequest proto.InternalMessageInfo
-
-func (m *TurnDeviceOffRequest) GetId() int32 {
-	if m != nil {
-		return m.Id
-	}
-	return 0
-}
-
-type TurnDeviceOffResponse struct {
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *TurnDeviceOffResponse) Reset()         { *m = TurnDeviceOffResponse{} }
-func (m *TurnDeviceOffResponse) String() string { return proto.CompactTextString(m) }
-func (*TurnDeviceOffResponse) ProtoMessage()    {}
-func (*TurnDeviceOffResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7f669820b67678c6, []int{20}
-}
-
-func (m *TurnDeviceOffResponse) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_TurnDeviceOffResponse.Unmarshal(m, b)
-}
-func (m *TurnDeviceOffResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_TurnDeviceOffResponse.Marshal(b, m, deterministic)
-}
-func (m *TurnDeviceOffResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_TurnDeviceOffResponse.Merge(m, src)
-}
-func (m *TurnDeviceOffResponse) XXX_Size() int {
-	return xxx_messageInfo_TurnDeviceOffResponse.Size(m)
-}
-func (m *TurnDeviceOffResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_TurnDeviceOffResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_TurnDeviceOffResponse proto.InternalMessageInfo
+var xxx_messageInfo_ChangeDevicePositioningResponse proto.InternalMessageInfo
 
 func init() {
 	proto.RegisterType((*DeviceMetadata)(nil), "grpc_server.DeviceMetadata")
@@ -935,14 +669,8 @@ func init() {
 	proto.RegisterType((*ListDeviceIDsResponse)(nil), "grpc_server.ListDeviceIDsResponse")
 	proto.RegisterType((*GetDeviceRequest)(nil), "grpc_server.GetDeviceRequest")
 	proto.RegisterType((*GetDeviceResponse)(nil), "grpc_server.GetDeviceResponse")
-	proto.RegisterType((*ChangeDeviceColorRequest)(nil), "grpc_server.ChangeDeviceColorRequest")
-	proto.RegisterType((*ChangeDeviceColorResponse)(nil), "grpc_server.ChangeDeviceColorResponse")
-	proto.RegisterType((*ChangeDeviceDimmingRequest)(nil), "grpc_server.ChangeDeviceDimmingRequest")
-	proto.RegisterType((*ChangeDeviceDimmingResponse)(nil), "grpc_server.ChangeDeviceDimmingResponse")
-	proto.RegisterType((*TurnDeviceOnRequest)(nil), "grpc_server.TurnDeviceOnRequest")
-	proto.RegisterType((*TurnDeviceOnResponse)(nil), "grpc_server.TurnDeviceOnResponse")
-	proto.RegisterType((*TurnDeviceOffRequest)(nil), "grpc_server.TurnDeviceOffRequest")
-	proto.RegisterType((*TurnDeviceOffResponse)(nil), "grpc_server.TurnDeviceOffResponse")
+	proto.RegisterType((*ChangeDevicePositioningRequest)(nil), "grpc_server.ChangeDevicePositioningRequest")
+	proto.RegisterType((*ChangeDevicePositioningResponse)(nil), "grpc_server.ChangeDevicePositioningResponse")
 }
 
 func init() { proto.RegisterFile("tradfri.proto", fileDescriptor_7f669820b67678c6) }
@@ -1012,10 +740,7 @@ type TradfriServiceClient interface {
 	ListDevices(ctx context.Context, in *ListDevicesRequest, opts ...grpc.CallOption) (*ListDevicesResponse, error)
 	ListDeviceIDs(ctx context.Context, in *ListDeviceIDsRequest, opts ...grpc.CallOption) (*ListDeviceIDsResponse, error)
 	GetDevice(ctx context.Context, in *GetDeviceRequest, opts ...grpc.CallOption) (*GetDeviceResponse, error)
-	ChangeDeviceColor(ctx context.Context, in *ChangeDeviceColorRequest, opts ...grpc.CallOption) (*ChangeDeviceColorResponse, error)
-	ChangeDeviceDimming(ctx context.Context, in *ChangeDeviceDimmingRequest, opts ...grpc.CallOption) (*ChangeDeviceDimmingResponse, error)
-	TurnDeviceOn(ctx context.Context, in *TurnDeviceOnRequest, opts ...grpc.CallOption) (*TurnDeviceOnResponse, error)
-	TurnDeviceOff(ctx context.Context, in *TurnDeviceOffRequest, opts ...grpc.CallOption) (*TurnDeviceOffResponse, error)
+	ChangeDevicePositioning(ctx context.Context, in *ChangeDevicePositioningRequest, opts ...grpc.CallOption) (*ChangeDevicePositioningResponse, error)
 }
 
 type tradfriServiceClient struct {
@@ -1071,36 +796,9 @@ func (c *tradfriServiceClient) GetDevice(ctx context.Context, in *GetDeviceReque
 	return out, nil
 }
 
-func (c *tradfriServiceClient) ChangeDeviceColor(ctx context.Context, in *ChangeDeviceColorRequest, opts ...grpc.CallOption) (*ChangeDeviceColorResponse, error) {
-	out := new(ChangeDeviceColorResponse)
-	err := c.cc.Invoke(ctx, "/grpc_server.TradfriService/ChangeDeviceColor", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *tradfriServiceClient) ChangeDeviceDimming(ctx context.Context, in *ChangeDeviceDimmingRequest, opts ...grpc.CallOption) (*ChangeDeviceDimmingResponse, error) {
-	out := new(ChangeDeviceDimmingResponse)
-	err := c.cc.Invoke(ctx, "/grpc_server.TradfriService/ChangeDeviceDimming", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *tradfriServiceClient) TurnDeviceOn(ctx context.Context, in *TurnDeviceOnRequest, opts ...grpc.CallOption) (*TurnDeviceOnResponse, error) {
-	out := new(TurnDeviceOnResponse)
-	err := c.cc.Invoke(ctx, "/grpc_server.TradfriService/TurnDeviceOn", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *tradfriServiceClient) TurnDeviceOff(ctx context.Context, in *TurnDeviceOffRequest, opts ...grpc.CallOption) (*TurnDeviceOffResponse, error) {
-	out := new(TurnDeviceOffResponse)
-	err := c.cc.Invoke(ctx, "/grpc_server.TradfriService/TurnDeviceOff", in, out, opts...)
+func (c *tradfriServiceClient) ChangeDevicePositioning(ctx context.Context, in *ChangeDevicePositioningRequest, opts ...grpc.CallOption) (*ChangeDevicePositioningResponse, error) {
+	out := new(ChangeDevicePositioningResponse)
+	err := c.cc.Invoke(ctx, "/grpc_server.TradfriService/ChangeDevicePositioning", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1114,10 +812,7 @@ type TradfriServiceServer interface {
 	ListDevices(context.Context, *ListDevicesRequest) (*ListDevicesResponse, error)
 	ListDeviceIDs(context.Context, *ListDeviceIDsRequest) (*ListDeviceIDsResponse, error)
 	GetDevice(context.Context, *GetDeviceRequest) (*GetDeviceResponse, error)
-	ChangeDeviceColor(context.Context, *ChangeDeviceColorRequest) (*ChangeDeviceColorResponse, error)
-	ChangeDeviceDimming(context.Context, *ChangeDeviceDimmingRequest) (*ChangeDeviceDimmingResponse, error)
-	TurnDeviceOn(context.Context, *TurnDeviceOnRequest) (*TurnDeviceOnResponse, error)
-	TurnDeviceOff(context.Context, *TurnDeviceOffRequest) (*TurnDeviceOffResponse, error)
+	ChangeDevicePositioning(context.Context, *ChangeDevicePositioningRequest) (*ChangeDevicePositioningResponse, error)
 }
 
 func RegisterTradfriServiceServer(s *grpc.Server, srv TradfriServiceServer) {
@@ -1214,74 +909,20 @@ func _TradfriService_GetDevice_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
-func _TradfriService_ChangeDeviceColor_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ChangeDeviceColorRequest)
+func _TradfriService_ChangeDevicePositioning_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ChangeDevicePositioningRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(TradfriServiceServer).ChangeDeviceColor(ctx, in)
+		return srv.(TradfriServiceServer).ChangeDevicePositioning(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc_server.TradfriService/ChangeDeviceColor",
+		FullMethod: "/grpc_server.TradfriService/ChangeDevicePositioning",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TradfriServiceServer).ChangeDeviceColor(ctx, req.(*ChangeDeviceColorRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _TradfriService_ChangeDeviceDimming_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ChangeDeviceDimmingRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(TradfriServiceServer).ChangeDeviceDimming(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/grpc_server.TradfriService/ChangeDeviceDimming",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TradfriServiceServer).ChangeDeviceDimming(ctx, req.(*ChangeDeviceDimmingRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _TradfriService_TurnDeviceOn_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(TurnDeviceOnRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(TradfriServiceServer).TurnDeviceOn(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/grpc_server.TradfriService/TurnDeviceOn",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TradfriServiceServer).TurnDeviceOn(ctx, req.(*TurnDeviceOnRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _TradfriService_TurnDeviceOff_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(TurnDeviceOffRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(TradfriServiceServer).TurnDeviceOff(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/grpc_server.TradfriService/TurnDeviceOff",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TradfriServiceServer).TurnDeviceOff(ctx, req.(*TurnDeviceOffRequest))
+		return srv.(TradfriServiceServer).ChangeDevicePositioning(ctx, req.(*ChangeDevicePositioningRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1311,20 +952,8 @@ var _TradfriService_serviceDesc = grpc.ServiceDesc{
 			Handler:    _TradfriService_GetDevice_Handler,
 		},
 		{
-			MethodName: "ChangeDeviceColor",
-			Handler:    _TradfriService_ChangeDeviceColor_Handler,
-		},
-		{
-			MethodName: "ChangeDeviceDimming",
-			Handler:    _TradfriService_ChangeDeviceDimming_Handler,
-		},
-		{
-			MethodName: "TurnDeviceOn",
-			Handler:    _TradfriService_TurnDeviceOn_Handler,
-		},
-		{
-			MethodName: "TurnDeviceOff",
-			Handler:    _TradfriService_TurnDeviceOff_Handler,
+			MethodName: "ChangeDevicePositioning",
+			Handler:    _TradfriService_ChangeDevicePositioning_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

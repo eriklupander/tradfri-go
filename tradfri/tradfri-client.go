@@ -23,66 +23,9 @@ func NewTradfriClient(gatewayAddress, clientID, psk string) *Client {
 	return client
 }
 
-// PutDeviceDimming sets the dimming property (0-255) of the specified device.
-// The device must be a bulb supporting dimming, otherwise the call if ineffectual.
-func (tc *Client) PutDeviceDimming(deviceId string, dimming int) (model.Result, error) {
-	payload := fmt.Sprintf(`{ "3311": [{ "5851": %d }] }`, dimming)
-	logrus.Infof("Payload is: %v", payload)
-	resp, err := tc.Call(tc.dtlsclient.BuildPUTMessage("/15001/"+deviceId, payload))
-	if err != nil {
-		return model.Result{}, err
-	}
-	logrus.Infof("Response: %+v", resp)
-	return model.Result{Msg: resp.Code.String()}, nil
-}
-
-// PutDevicePower switches the power state of the specified device to on (1) or off (0)
-func (tc *Client) PutDevicePower(deviceId string, power int) (model.Result, error) {
-	if !(power == 1 || power == 0) {
-		return model.Result{}, fmt.Errorf("invalid value for setting power state, must be 1 or 0")
-	}
-	payload := fmt.Sprintf(`{ "3311": [{ "5850": %d }] }`, power)
-	logrus.Infof("Payload is: %v", payload)
-	resp, err := tc.Call(tc.dtlsclient.BuildPUTMessage("/15001/"+deviceId, payload))
-	if err != nil {
-		return model.Result{}, err
-	}
-	logrus.Infof("Response: %+v", resp)
-	return model.Result{Msg: resp.Code.String()}, nil
-}
-
-// PutDeviceState allows changing both power (1 or 0) and dimmer (0-255) for a given device with one command.
-func (tc *Client) PutDeviceState(deviceId string, power int, dimmer int, color string) (model.Result, error) {
-	if !(power == 1 || power == 0) {
-		return model.Result{}, fmt.Errorf("invalid value for setting power state, must be 1 or 0")
-	}
-	payload := fmt.Sprintf(`{ "3311": [{ "5850": %d, "5851": %d}] }`, power, dimmer) // , "5706": "%s"
-	logrus.Infof("Payload is: %v", payload)
-	resp, err := tc.Call(tc.dtlsclient.BuildPUTMessage("/15001/"+deviceId, payload))
-	if err != nil {
-		return model.Result{}, err
-	}
-	logrus.Infof("Response: %+v", resp)
-	return model.Result{Msg: resp.Code.String()}, nil
-}
-
-// PutDeviceColor sets the CIE 1931 color space x/y color, x and y must be between 0-65536 but note that
-// many combinations won't work. See CIE 1931 for more details.
-func (tc *Client) PutDeviceColor(deviceId string, x, y int) (model.Result, error) {
-	payload := fmt.Sprintf(`{ "3311": [ {"5709": %d, "5710": %d}] }`, x, y)
-	logrus.Infof("Payload is: %v", payload)
-	resp, err := tc.Call(tc.dtlsclient.BuildPUTMessage("/15001/"+deviceId, payload))
-	if err != nil {
-		return model.Result{}, err
-	}
-	logrus.Infof("Response: %+v", resp)
-	return model.Result{Msg: resp.Code.String()}, nil
-}
-
-// PutDeviceColorRGB sets the color of the bulb using RGB hex string such as 8f2686 (purple). Note that
-// many colors doesn't seem to work. Not sure how the IKEA bulbs with color support works.
-func (tc *Client) PutDeviceColorRGB(deviceId, rgb string) (model.Result, error) {
-	payload := fmt.Sprintf(`{ "3311": [ {"5706": "%s"}] }`, rgb)
+// PutDevicePositioning sets the positioning property (0-100) of the specified device.
+func (tc *Client) PutDevicePositioning(deviceId string, positioning float32) (model.Result, error) {
+	payload := fmt.Sprintf(`{ "15015": [{ "5536": %f }] }`, positioning)
 	logrus.Infof("Payload is: %v", payload)
 	resp, err := tc.Call(tc.dtlsclient.BuildPUTMessage("/15001/"+deviceId, payload))
 	if err != nil {

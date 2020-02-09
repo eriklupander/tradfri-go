@@ -19,13 +19,11 @@ var tradfriClient *tradfri.Client
 // SetupChi sets up our HTTP router/muxer using Chi, a pointer to a Client must be passed.
 func SetupChi(client *tradfri.Client, port int) {
 	tradfriClient = client
-	logger := middleware.RequestLogger(&middleware.DefaultLogFormatter{Logger: logrus.StandardLogger(), NoColor: false})
 	r := chi.NewRouter()
 
 	// A good base middleware stack
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
-	r.Use(logger)
 	r.Use(middleware.Recoverer)
 
 	// Set a timeout value on the request context (ctx), that will signal
@@ -44,11 +42,7 @@ func SetupChi(client *tradfri.Client, port int) {
 		r.Get("/groups/{groupId}/deviceIds", getDeviceIdsOnGroup)
 		r.Get("/groups/{groupId}/devices", getDevicesOnGroup)
 		r.Get("/device/{deviceId}", getDevice)
-		r.Put("/device/{deviceId}/color", setColorXY)
-		r.Put("/device/{deviceId}/rgb", setColorRGBHex)
-		r.Put("/device/{deviceId}/dimmer", setDimming)
-		r.Put("/device/{deviceId}/power", setPower)
-		r.Put("/device/{deviceId}", setState)
+		r.Put("/device/{deviceId}/position", setPositioning)
 
 	})
 
@@ -56,65 +50,16 @@ func SetupChi(client *tradfri.Client, port int) {
 	http.ListenAndServe(fmt.Sprintf(":%d", port), r)
 }
 
-func setColorXY(w http.ResponseWriter, r *http.Request) {
-	deviceId := chi.URLParam(r, "deviceId")
-	xStr := chi.URLParam(r, "x")
-	yStr := chi.URLParam(r, "y")
-	x, _ := strconv.Atoi(xStr)
-	y, _ := strconv.Atoi(yStr)
-	res, err := tradfriClient.PutDeviceColor(deviceId, x, y)
-	respond(w, res, err)
-}
-
-func setColorRGBHex(w http.ResponseWriter, r *http.Request) {
+func setPositioning(w http.ResponseWriter, r *http.Request) {
 	deviceId := chi.URLParam(r, "deviceId")
 	body, _ := ioutil.ReadAll(r.Body)
 
-	rgbColorRequest := model.RgbColorRequest{}
-	if err := json.Unmarshal(body, &rgbColorRequest); err != nil {
+	positioningRequest := model.PositioningRequest{}
+	if err := json.Unmarshal(body, &positioningRequest); err != nil {
 		badRequest(w, err)
 		return
 	}
-	result, err := tradfriClient.PutDeviceColorRGB(deviceId, rgbColorRequest.RGBcolor)
-	respond(w, result, err)
-}
-
-func setDimming(w http.ResponseWriter, r *http.Request) {
-	deviceId := chi.URLParam(r, "deviceId")
-	body, _ := ioutil.ReadAll(r.Body)
-
-	dimmingRequest := model.DimmingRequest{}
-	if err := json.Unmarshal(body, &dimmingRequest); err != nil {
-		badRequest(w, err)
-		return
-	}
-	res, err := tradfriClient.PutDeviceDimming(deviceId, dimmingRequest.Dimming)
-	respond(w, res, err)
-}
-
-func setPower(w http.ResponseWriter, r *http.Request) {
-	deviceId := chi.URLParam(r, "deviceId")
-	body, _ := ioutil.ReadAll(r.Body)
-
-	powerRequest := model.PowerRequest{}
-	if err := json.Unmarshal(body, &powerRequest); err != nil {
-		badRequest(w, err)
-		return
-	}
-	res, err := tradfriClient.PutDevicePower(deviceId, powerRequest.Power)
-	respond(w, res, err)
-}
-
-func setState(w http.ResponseWriter, r *http.Request) {
-	deviceId := chi.URLParam(r, "deviceId")
-	body, _ := ioutil.ReadAll(r.Body)
-
-	stateReq := model.StateRequest{}
-	if err := json.Unmarshal(body, &stateReq); err != nil {
-		badRequest(w, err)
-		return
-	}
-	res, err := tradfriClient.PutDeviceState(deviceId, stateReq.Power, stateReq.Dimmer, stateReq.RGBcolor)
+	res, err := tradfriClient.PutDevicePositioning(deviceId, positioningRequest.Positioning)
 	respond(w, res, err)
 }
 
@@ -134,7 +79,7 @@ func getGroup(w http.ResponseWriter, r *http.Request) {
 
 func getDevicesOnGroup(w http.ResponseWriter, r *http.Request) {
 	group, _ := tradfriClient.GetGroup(chi.URLParam(r, "groupId"))
-	devices := make([]model.BulbResponse, 0)
+	devices := make([]model.BlindResponse, 0)
 	for _, deviceID := range group.Content.DeviceList.DeviceIds {
 		device, _ := tradfriClient.GetDevice(strconv.Itoa(deviceID))
 		devices = append(devices, model.ToDeviceResponse(device))

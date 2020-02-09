@@ -15,11 +15,10 @@ Native Go implementation for talking CoAP to a [IKEA Trådfri](https://www.ikea.
 This application is just stitching together the excellent work of [github.com/dustin](https://github.com/dustin) and [github.com/bocajim](https://github.com/bocajim) into a stand-alone application that can talk to a IKEA Trådfri gateway out-of-the-box without any dependencies on libcoap, openssl or similar libraries.
 
 **Inspired by:**
-- https://learn.pimoroni.com/tutorial/sandyj/controlling-ikea-tradfri-lights-from-your-pi
-- https://github.com/glenndehaan/ikea-tradfri-coap-docs
-- https://bitsex.net/software/2017/coap-endpoints-on-ikea-tradfri/
+https://github.com/eriklupander/tradfri-go
 
 ### Changelog
+- 2020-02-10: Removing all light, remote and outlet control. Adding support for Ikea Blinds
 - 2020-01-16: Updated logging to use logrus with configurable log level in config.json.
 - 2019-06-19: gRPC support by [https://github.com/Age15990](https://github.com/Age15990)
 - 2019-06-08: Configurable HTTP port by [https://github.com/Mirdinus](https://github.com/Mirdinus)
@@ -78,82 +77,28 @@ config.json -> command-line arguments -> environment variables
 _tradfri-go_ has no means of finding out the IP of the Gateway. I suggest checking your Router's list of connected devices and try to find an item starting with "GW-".
 
 ### Running in server mode
-Server mode connects to your gateway and then publishes a really simple RESTful interface and a gRPC service for querying your gateway or mutating some state on bulbs etc:
+Server mode connects to your gateway and then publishes a really simple RESTful interface and a gRPC service for querying your gateway or mutating some state on blinds:
 
     ./tradfri-go --server
     
 Now, you can use the simple RESTful API provided by tradfri-go which returns more human-readable responses than the raw CoAP responses:
 
-    > curl http://localhost:8080/api/device/65538 | jq .
+    > curl http://localhost:8080/api/device/65541 | jq .
     {
       "deviceMetadata": {
-        "id": 65538,
-        "name": "Färgglad",
+        "id": 65541,
+        "name": "left",
         "vendor": "IKEA of Sweden",
-        "type": "TRADFRI bulb E27 CWS opal 600lm"
+        "type": "FYRTUR block-out roller blind",
+        "battery": 90
       },
-      "dimmer": 100,
-      "xcolor": 30015,
-      "ycolor": 26870,
-      "rgbcolor": "f1e0b5",
-      "power": true
+      "position": 20
     }
     
-Or use one of the declarative endpoints to mutate the state of the bulb:
+Or use one of the declarative endpoints to mutate the state of the blind:
 
-    > curl -X PUT -data '{"rgbcolor":"f1e0b5"}' http://localhost:8080/api/device/65538/rgb
+    > curl -X PUT -data '{"positioning": 20}' http://localhost:8080/api/device/65541/position
 
-If you want to use the gRPC service, implement your client like this:
-
-    var client pb.TradfriServiceClient
-	{
-		conn, err := grpc.Dial("localhost:8081",
-			grpc.WithInsecure(),
-		)
-		if err != nil {
-			log.Fatalf("did not connect: %v", err)
-		}
-		defer conn.Close()
-		client = pb.NewTradfriServiceClient(conn)
-	}
-
-while importing `pb "github.com/eriklupander/tradfri-go/grpc_server/golang"`.
-
-And, as simple as calling every other method in your code, request the server like this:
-
-    resp, err := client.ListGroups(context.Background(), &pb.ListGroupsRequest{})
-
-You can also install `grpcurl` and query the server via the command line:
-
-    > grpcurl -plaintext localhost:8081 grpc_server.TradfriService/ListGroups
-    > grpcurl -plaintext -d '{"id": 65552}' localhost:8081 grpc_server.TradfriService/TurnDeviceOn
-    
-Just like the client mode, the application will try to use clientId/PSK from _psk.key_ or using env vars.
-
-### Running in client mode
-
-Client mode lets you GET and PUT raw coap payloads to your gateway using the "-get" and "-put" args.
-
-A few examples:
-
-GET my bulb at /15001/65538:
-
-    ./tradfri-go --get /15001/65538
-    {"9019":1,"9001":"Färgglad","9002":1550336061,"9020":1551721891,"9003":65538,"9054":0,"5750":2,"3":{"0":"IKEA of Sweden","1":"TRADFRI bulb E27 CWS opal 600lm","2":"","3":"1.3.009","6":1},"3311":[{"5708":65279,"5850":1,"5851":100,"5707":53953,"5709":20316,"5710":8520,"5706":"8f2686","9003":0}]}
-
-PUT that turns off the bulb at /15001/65538:
-    
-    ./tradfri-go --put /15001/65538 --payload '{ "3311": [{ "5850": 0 }] }'
-    
-PUT that turns on the bulb at /15001/65538 and sets dimmer to 200:
-    
-    ./tradfri-go --put /15001/65538 --payload '{ "3311": [{ "5850": 1, "5851": 200 }] }'
-    
-PUT that sets color of the bulb at /15001/65538 to purple and the dimmer to 100:
-        
-    ./tradfri-go --put /15001/65538 --payload '{ "3311": [{ "5706": "8f2686", "5851": 100 }] }'
-    
-The colors possible to set on the bulbs varies. The colors are in the CIE 1931 color space whose x/y values _in theory_ can be set using the 5709 and 5710 codes to values between 0 and 65535. You can't set arbitrary values due to how the CIE 1931 (yes, it's a standard from 1931!) works. Play around with the values, I havn't broken my full-color "TRADFRI bulb E27 CWS opal 600lm" yet...
 
 # LICENSE
 

@@ -100,50 +100,12 @@ func (s *server) GetDevice(ctx context.Context, r *pb.GetDeviceRequest) (*pb.Get
 	}, nil
 }
 
-func (s *server) ChangeDeviceColor(ctx context.Context, r *pb.ChangeDeviceColorRequest) (*pb.ChangeDeviceColorResponse, error) {
+func (s *server) ChangeDevicePositioning(ctx context.Context, r *pb.ChangeDevicePositioningRequest) (*pb.ChangeDevicePositioningResponse, error) {
 	if r.GetId() < 1 {
 		return nil, status.Error(codes.InvalidArgument, "id is mandatory")
 	}
-	// rgb
-	if r.GetRgb() != "" {
-		if _, err := s.tradfriClient.PutDeviceColorRGB(fmt.Sprintf("%d", r.GetId()), r.GetRgb()); err != nil {
-			return nil, status.Error(codes.Internal, err.Error())
-		}
-		return &pb.ChangeDeviceColorResponse{}, nil
-	}
-	// we assume it is x and y request
-	if _, err := s.tradfriClient.PutDeviceColor(fmt.Sprintf("%d", r.GetId()), int(r.GetXcolor()), int(r.GetYcolor())); err != nil {
+	if _, err := s.tradfriClient.PutDevicePositioning(fmt.Sprintf("%d", r.GetId()), float32(r.GetValue())); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	return &pb.ChangeDeviceColorResponse{}, nil
-}
-
-func (s *server) ChangeDeviceDimming(ctx context.Context, r *pb.ChangeDeviceDimmingRequest) (*pb.ChangeDeviceDimmingResponse, error) {
-	if r.GetId() < 1 {
-		return nil, status.Error(codes.InvalidArgument, "id is mandatory")
-	}
-	if _, err := s.tradfriClient.PutDeviceDimming(fmt.Sprintf("%d", r.GetId()), int(r.GetValue())); err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-	return &pb.ChangeDeviceDimmingResponse{}, nil
-}
-
-func (s *server) TurnDeviceOn(ctx context.Context, r *pb.TurnDeviceOnRequest) (*pb.TurnDeviceOnResponse, error) {
-	if r.GetId() < 1 {
-		return nil, status.Error(codes.InvalidArgument, "id is mandatory")
-	}
-	if _, err := s.tradfriClient.PutDevicePower(fmt.Sprintf("%d", r.GetId()), 1); err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-	return &pb.TurnDeviceOnResponse{}, nil
-}
-
-func (s *server) TurnDeviceOff(ctx context.Context, r *pb.TurnDeviceOffRequest) (*pb.TurnDeviceOffResponse, error) {
-	if r.GetId() < 1 {
-		return nil, status.Error(codes.InvalidArgument, "id is mandatory")
-	}
-	if _, err := s.tradfriClient.PutDevicePower(fmt.Sprintf("%d", r.GetId()), 0); err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-	return &pb.TurnDeviceOffResponse{}, nil
+	return &pb.ChangeDevicePositioningResponse{}, nil
 }

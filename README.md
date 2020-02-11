@@ -20,6 +20,7 @@ This application is just stitching together the excellent work of [github.com/du
 - https://bitsex.net/software/2017/coap-endpoints-on-ikea-tradfri/
 
 ### Changelog
+- 2020-02-11: Blinds support by [https://github.com/sthorsen](https://github.com/sthorsen)
 - 2020-01-16: Updated logging to use logrus with configurable log level in config.json.
 - 2019-06-19: gRPC support by [https://github.com/Age15990](https://github.com/Age15990)
 - 2019-06-08: Configurable HTTP port by [https://github.com/Mirdinus](https://github.com/Mirdinus)
@@ -101,7 +102,20 @@ Now, you can use the simple RESTful API provided by tradfri-go which returns mor
     
 Or use one of the declarative endpoints to mutate the state of the bulb:
 
-    > curl -X PUT -data '{"rgbcolor":"f1e0b5"}' http://localhost:8080/api/device/65538/rgb
+    > curl -X PUT -d '{"rgbcolor":"f1e0b5"}' http://localhost:8080/api/device/65538/rgb
+
+### Blinds support
+
+tradfri-go now supports controlling IKEA Blinds by passing a positioning value between 0-100.
+
+Examples (curl and gRPC)
+
+    > curl -X PUT -d '{"positioning": 20}' http://localhost:8080/api/device/65552/position
+    > grpcurl -plaintext -d '{"id": 65552, "value": 20}' localhost:8081 grpc_server.TradfriService/ChangeDevicePositioning
+
+Sets the position to 20% extended.
+
+### gRPC support
 
 If you want to use the gRPC service, implement your client like this:
 

@@ -92,6 +92,18 @@ func (tc *Client) PutDeviceColorRGB(deviceId, rgb string) (model.Result, error) 
 	return model.Result{Msg: resp.Code.String()}, nil
 }
 
+// PutDevicePositioning sets the positioning property (0-100) of the specified device.
+func (tc *Client) PutDevicePositioning(deviceId string, positioning float32) (model.Result, error) {
+	payload := fmt.Sprintf(`{ "15015": [{ "5536": %f }] }`, positioning)
+	logrus.Infof("Payload is: %v", payload)
+	resp, err := tc.Call(tc.dtlsclient.BuildPUTMessage("/15001/"+deviceId, payload))
+	if err != nil {
+		return model.Result{}, err
+	}
+	logrus.Infof("Response: %+v", resp)
+	return model.Result{Msg: resp.Code.String()}, nil
+}
+
 // ListGroups lists all groups
 func (tc *Client) ListGroups() ([]model.Group, error) {
 	groups := make([]model.Group, 0)
@@ -162,7 +174,8 @@ func (tc *Client) Put(id string, payload string) (coap.Message, error) {
 	return tc.Call(tc.dtlsclient.BuildPUTMessage(id, payload))
 }
 
-// AuthExchange, see ref: https://community.openhab.org/t/ikea-tradfri-gateway/26135/148?u=kai
+// AuthExchange performs the initial PSK exchange.
+// see ref: https://community.openhab.org/t/ikea-tradfri-gateway/26135/148?u=kai
 func (tc *Client) AuthExchange(clientId string) (model.TokenExchange, error) {
 
 	req := tc.dtlsclient.BuildPOSTMessage("/15011/9063", fmt.Sprintf(`{"9090":"%s"}`, clientId))

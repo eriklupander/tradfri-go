@@ -147,3 +147,13 @@ func (s *server) TurnDeviceOff(ctx context.Context, r *pb.TurnDeviceOffRequest) 
 	}
 	return &pb.TurnDeviceOffResponse{}, nil
 }
+
+func (s *server) ChangeDevicePositioning(ctx context.Context, r *pb.ChangeDevicePositioningRequest) (*pb.ChangeDevicePositioningResponse, error) {
+	if r.GetId() < 1 {
+		return nil, status.Error(codes.InvalidArgument, "id is mandatory")
+	}
+	if _, err := s.tradfriClient.PutDevicePositioning(fmt.Sprintf("%d", r.GetId()), float32(r.GetValue())); err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	return &pb.ChangeDevicePositioningResponse{}, nil
+}

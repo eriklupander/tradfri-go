@@ -75,6 +75,7 @@ func (dc *DtlsClient) Call(req coap.Message) (coap.Message, error) {
 		return coap.Message{}, err
 	}
 
+	logrus.Info("Response: ")
 	logrus.Infof("MessageID: %v\n", msg.MessageID)
 	logrus.Infof("Type: %v\n", msg.Type)
 	logrus.Infof("Code: %v\n", msg.Code)

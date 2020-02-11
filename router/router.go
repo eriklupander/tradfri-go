@@ -7,6 +7,7 @@ import (
 	"github.com/eriklupander/tradfri-go/tradfri"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
@@ -49,7 +50,7 @@ func SetupChi(client *tradfri.Client, port int) {
 		r.Put("/device/{deviceId}/dimmer", setDimming)
 		r.Put("/device/{deviceId}/power", setPower)
 		r.Put("/device/{deviceId}", setState)
-
+		r.Put("/device/{deviceId}/position", setPositioning)
 	})
 
 	// Blocks here!
@@ -118,6 +119,20 @@ func setState(w http.ResponseWriter, r *http.Request) {
 	respond(w, res, err)
 }
 
+func setPositioning(w http.ResponseWriter, r *http.Request) {
+	deviceId := chi.URLParam(r, "deviceId")
+
+	body, _ := ioutil.ReadAll(r.Body)
+	positioningReq := model.PositioningRequest{}
+	if err := json.Unmarshal(body, &positioningReq); err != nil {
+		badRequest(w, errors.Wrap(err, "unmarshalling of positioning JSON body failed"))
+		return
+	}
+
+	res, err := tradfriClient.PutDevicePositioning(deviceId, positioningReq.Positioning)
+	respond(w, res, err)
+}
+
 func listGroups(w http.ResponseWriter, r *http.Request) {
 	groups, err := tradfriClient.ListGroups()
 	groupResponses := make([]model.GroupResponse, 0)
@@ -134,7 +149,7 @@ func getGroup(w http.ResponseWriter, r *http.Request) {
 
 func getDevicesOnGroup(w http.ResponseWriter, r *http.Request) {
 	group, _ := tradfriClient.GetGroup(chi.URLParam(r, "groupId"))
-	devices := make([]model.BulbResponse, 0)
+	devices := make([]interface{}, 0)
 	for _, deviceID := range group.Content.DeviceList.DeviceIds {
 		device, _ := tradfriClient.GetDevice(strconv.Itoa(deviceID))
 		devices = append(devices, model.ToDeviceResponse(device))

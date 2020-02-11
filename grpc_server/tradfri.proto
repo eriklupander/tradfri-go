@@ -15,6 +15,8 @@ service TradfriService {
   rpc ChangeDeviceDimming (ChangeDeviceDimmingRequest) returns (ChangeDeviceDimmingResponse) {}
   rpc TurnDeviceOn (TurnDeviceOnRequest) returns (TurnDeviceOnResponse) {}
   rpc TurnDeviceOff (TurnDeviceOffRequest) returns (TurnDeviceOffResponse) {}
+
+  rpc ChangeDevicePositioning (ChangeDevicePositioningRequest) returns (ChangeDevicePositioningResponse) {}
 }
 
 message DeviceMetadata {
@@ -22,6 +24,7 @@ message DeviceMetadata {
   string name = 2;
   string vendor = 3;
   string type = 4;
+  int32  bat = 10;
 }
 
 message Device{
@@ -31,6 +34,7 @@ message Device{
   int32 ycolor = 4;
   string rgb = 5;
   bool power = 6;
+  float position = 10;
 }
 
 message Group{
@@ -105,3 +109,10 @@ message TurnDeviceOffRequest{
 }
 
 message TurnDeviceOffResponse{}
+
+message ChangeDevicePositioningRequest{
+  int32 id = 1;
+  int32 value = 2;
+}
+
+message ChangeDevicePositioningResponse{}

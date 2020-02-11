@@ -8,6 +8,7 @@ type Device struct {
 		Num2     string `json:"2"`
 		TypeId   string `json:"3"`
 		Num6     int    `json:"6"`
+		Battery  int    `json:"9"`
 	} `json:"3"`
 	LightControl []struct {
 		RGBHex     string `json:"5706"`
@@ -19,6 +20,10 @@ type Device struct {
 		Dimmer     int    `json:"5851"`
 		Num9003    int    `json:"9003"`
 	} `json:"3311"`
+	BlindControl []struct {
+		Position float32 `json:"5536"`
+		Num9003  int     `json:"9003"`
+	} `json:"15015"`
 	Num5750  int    `json:"5750"`
 	Name     string `json:"9001"`
 	Num9002  int    `json:"9002"`
@@ -92,10 +97,11 @@ type ControlOutlet struct {
 
 // DeviceMetadata defines (with JSON tags) common device metadata. Typically embedded in other structs.
 type DeviceMetadata struct {
-	Id     int    `json:"id"`
-	Name   string `json:"name"`
-	Vendor string `json:"vendor"`
-	Type   string `json:"type"`
+	Id      int    `json:"id"`
+	Name    string `json:"name"`
+	Vendor  string `json:"vendor"`
+	Type    string `json:"type"`
+	Battery int    `json:"battery"`
 }
 
 // PowerPlugResponse is the response from a power plug device GET.
@@ -114,21 +120,31 @@ type BulbResponse struct {
 	Power          bool           `json:"power"`
 }
 
+// Result is a generic result containing a plain text message
 type Result struct {
 	Msg string
 }
 
+// TokenExchange maps the human-readable Token and TypeIdentifies into their IKEA specific numeric codes.
 type TokenExchange struct {
 	Token          string `json:"9091"`
 	TypeIdentifier string `json:"9029"`
 }
 
 // REST API structs
+
+// GroupResponse defines a Group JSON response
 type GroupResponse struct {
 	Id         int    `json:"id"`
 	Power      int    `json:"power"`
 	Created    string `json:"created"`
 	DeviceList []int  `json:"deviceList"`
+}
+
+// BlindResponse is the response from a blind GET.
+type BlindResponse struct {
+	DeviceMetadata DeviceMetadata `json:"deviceMetadata"`
+	Position       float32        `json:"position"`
 }
 
 // RgbColorRequest allows (trying to) set a bulb color using classic hex RGB string.
@@ -151,4 +167,9 @@ type StateRequest struct {
 	RGBcolor string `json:"rgbcolor"`
 	Dimmer   int    `json:"dimmer"`
 	Power    int    `json:"power"`
+}
+
+// PositioningRequest allows setting the position from 0-100.
+type PositioningRequest struct {
+	Positioning float32 `json:"positioning"`
 }

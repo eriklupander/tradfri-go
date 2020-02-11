@@ -8,7 +8,7 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/sirupsen/logrus"
-	"io/ioutil"
+//	"io/ioutil"
 	"net/http"
 	"strconv"
 	"time"
@@ -37,13 +37,13 @@ func SetupChi(client *tradfri.Client, port int) {
 
 	// RESTy routes for "api" resource
 	r.Route("/api", func(r chi.Router) {
-		r.Get("/groups", listGroups)
-		r.Get("/groups/{groupId}", getGroup)
-		r.Get("/groups/{groupId}/deviceIds", getDeviceIdsOnGroup)
-		r.Get("/groups/{groupId}/devices", getDevicesOnGroup)
-		r.Get("/device/{deviceId}", getDevice)
-		r.Put("/device/{deviceId}/position", setPositioning)
-
+		r.Get("/groups",                            listGroups)
+		r.Get("/groups/{groupId}",                  getGroup)
+		r.Get("/groups/{groupId}/deviceIds",        getDeviceIdsOnGroup)
+		r.Get("/groups/{groupId}/devices",          getDevicesOnGroup)
+		r.Get("/device/{deviceId}",                 getDevice)
+		r.Put("/device/{deviceId}/position/{pos}",  setPositioning)
+		r.Post("/device/{deviceId}/position/{pos}", setPositioning)
 	})
 
 	// Blocks here!
@@ -51,14 +51,24 @@ func SetupChi(client *tradfri.Client, port int) {
 }
 
 func setPositioning(w http.ResponseWriter, r *http.Request) {
+	var float float32
 	deviceId := chi.URLParam(r, "deviceId")
-	body, _ := ioutil.ReadAll(r.Body)
+	pos := chi.URLParam(r, "pos")
+//	body, _ := ioutil.ReadAll(r.Body)
+
+	f, _ := strconv.ParseFloat(pos, 32)
+	float = float32(f)
+
+	m := model.PositioningRequest{float}
+	jsonData, _ := json.Marshal(m)
 
 	positioningRequest := model.PositioningRequest{}
-	if err := json.Unmarshal(body, &positioningRequest); err != nil {
+//	if err := json.Unmarshal(body, &positioningRequest); err != nil {
+	if err := json.Unmarshal(jsonData, &positioningRequest); err != nil {
 		badRequest(w, err)
 		return
 	}
+
 	res, err := tradfriClient.PutDevicePositioning(deviceId, positioningRequest.Positioning)
 	respond(w, res, err)
 }

@@ -22,24 +22,24 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
-var configFlags = pflag.NewFlagSet("config", pflag.ExitOnError)
+var configFlags  = pflag.NewFlagSet("config",   pflag.ExitOnError)
 var commandFlags = pflag.NewFlagSet("commands", pflag.ExitOnError)
 
 func init() {
 
-	configFlags.String("gateway_ip", "", "ip to your gateway. No protocol or port here!")
-	configFlags.String("gateway_address", "", "address to your gateway. Including port here!")
-	configFlags.String("psk", "", "Pre-shared key on bottom of Gateway")
-	configFlags.String("client_id", "", "Your client id, make something up or use the NNN-NNN-NNN on the bottom of your Gateway")
-	configFlags.String("loglevel", "info", "log leve. Allowed values: fatal, error, warn, info, debug, trace")
+	configFlags.String("gateway_ip",      "",     "ip to your gateway. No protocol or port here!")
+	configFlags.String("gateway_address", "",     "address to your gateway. Including port here!")
+	configFlags.String("psk",             "",     "Pre-shared key on bottom of Gateway")
+	configFlags.String("client_id",       "",     "Your client id, make something up or use the NNN-NNN-NNN on the bottom of your Gateway")
+	configFlags.String("loglevel",        "info", "log leve. Allowed values: fatal, error, warn, info, debug, trace")
 
-	commandFlags.Bool("server", false, "Start in server mode?")
-	commandFlags.Bool("authenticate", false, "Perform PSK exchange")
-	commandFlags.String("get", "", "URL to GET")
-	commandFlags.String("put", "", "URL to PUT")
-	commandFlags.String("payload", "", "payload for PUT")
-	commandFlags.Int("port", 8080, "port of the server")
-	commandFlags.Int("grpc_port", 8081, "port of the grpc server")
+	commandFlags.Bool("server",           false,  "Start in server mode?")
+	commandFlags.Bool("authenticate",     false,  "Perform PSK exchange")
+	commandFlags.String("get",            "",     "URL to GET")
+	commandFlags.String("put",            "",     "URL to PUT")
+	commandFlags.String("payload",        "",     "payload for PUT")
+	commandFlags.Int("port",              80,     "port of the server")
+	commandFlags.Int("grpc_port",         81,     "port of the grpc server")
 
 	commandFlags.AddFlagSet(configFlags)
 	commandFlags.Parse(os.Args[1:])
@@ -90,15 +90,15 @@ func main() {
 	if gatewayAddress == "" {
 		gatewayAddress = viper.GetString("gateway_ip") + ":5684"
 	}
-	psk := viper.GetString("psk")
-	clientID := viper.GetString("client_id")
-	serverMode, _ := commandFlags.GetBool("server")
+	psk             := viper.GetString("psk")
+	clientID        := viper.GetString("client_id")
+	serverMode, _   := commandFlags.GetBool("server")
 	authenticate, _ := commandFlags.GetBool("authenticate")
-	get, getErr := commandFlags.GetString("get")
-	put, putErr := commandFlags.GetString("put")
-	payload, _ := commandFlags.GetString("payload")
-	port, _ := commandFlags.GetInt("port")
-	grpcPort, _ := commandFlags.GetInt("grpc_port")
+	get, getErr     := commandFlags.GetString("get")
+	put, putErr     := commandFlags.GetString("put")
+	payload, _      := commandFlags.GetString("payload")
+	port, _         := commandFlags.GetInt("port")
+	grpcPort, _     := commandFlags.GetInt("grpc_port")
 
 	// Handle the special authenticate use-case
 	if authenticate {
@@ -173,9 +173,9 @@ func performTokenExchange(gatewayAddress, clientID, psk string) {
 	if err != nil {
 		fail(err.Error())
 	}
-	viper.Set("client_id", clientID)
+	viper.Set("client_id",       clientID)
 	viper.Set("gateway_address", gatewayAddress)
-	viper.Set("psk", authToken.Token)
+	viper.Set("psk",             authToken.Token)
 	err = viper.WriteConfigAs("config.json")
 	if err != nil {
 		fail(err.Error())

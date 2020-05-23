@@ -3,12 +3,13 @@ package tradfri
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
+	"strings"
+
 	"github.com/dustin/go-coap"
 	"github.com/eriklupander/tradfri-go/dtlscoap"
 	"github.com/eriklupander/tradfri-go/model"
 	"github.com/sirupsen/logrus"
-	"strconv"
-	"strings"
 )
 
 // Client provides a declarative API for sending CoAP messages to the gateway over DTLS.
@@ -151,11 +152,51 @@ func (tc *Client) GetDevice(id string) (model.Device, error) {
 	if err != nil {
 		return *device, err
 	}
+
 	err = json.Unmarshal(resp.Payload, &device)
 	if err != nil {
 		return *device, err
 	}
 	return *device, nil
+}
+
+// ListDeviceIds gives you a list of all connected device id's
+func (tc *Client) ListDeviceIds() ([]int, error) {
+	var devices []int
+
+	resp, err := tc.Call(tc.dtlsclient.BuildGETMessage("/15001/"))
+	if err != nil {
+		return devices, err
+	}
+
+	err = json.Unmarshal(resp.Payload, &devices)
+	if err != nil {
+		return devices, err
+	}
+	return devices, nil
+}
+
+// ListDevices gives you a list of all devices
+func (tc *Client) ListDevices() ([]model.Device, error) {
+	var devices []model.Device
+
+	resp, err := tc.ListDeviceIds()
+	if err != nil {
+		return devices, err
+	}
+
+	devices = make([]model.Device, len(resp))
+
+	for i, id := range resp {
+		device, err := tc.GetDevice(strconv.Itoa(id))
+		if err != nil {
+			return devices, err
+		}
+
+		devices[i] = device
+	}
+
+	return devices, nil
 }
 
 // Get gets whatever is identified by the passed ID string.

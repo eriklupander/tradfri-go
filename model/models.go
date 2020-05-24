@@ -11,14 +11,16 @@ type Device struct {
 		Battery      int    `json:"9"`
 	} `json:"3"`
 	LightControl []struct {
-		RGBHex     string `json:"5706"`
-		Hue        int    `json:"5707"`
-		Saturation int    `json:"5708"`
-		CIE_1931_X int    `json:"5709"`
-		CIE_1931_Y int    `json:"5710"`
-		Power      int    `json:"5850"`
-		Dimmer     int    `json:"5851"`
-		DeviceId   int    `json:"9003"`
+		RGBHex           string  `json:"5706"`
+		Hue              int     `json:"5707"`
+		Saturation       int     `json:"5708"`
+		CIE_1931_X       int     `json:"5709"`
+		CIE_1931_Y       int     `json:"5710"`
+		ColorTemperature int     `json:"5711"`
+		TransitionTime   float64 `json:"5712"`
+		Power            int     `json:"5850"`
+		Dimmer           int     `json:"5851"`
+		DeviceId         int     `json:"9003"`
 	} `json:"3311"`
 	BlindControl []struct {
 		Position float32 `json:"5536"`

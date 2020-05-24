@@ -1,8 +1,9 @@
 package model
 
 import (
-	pb "github.com/eriklupander/tradfri-go/grpc_server/golang"
 	"time"
+
+	pb "github.com/eriklupander/tradfri-go/grpc_server/golang"
 )
 
 // ToDeviceResponse transforms the passed device into either a BulbResponse or BlindResponse. (more needed)
@@ -77,7 +78,7 @@ func ToGroupResponse(group Group) GroupResponse {
 	gr := GroupResponse{
 		Id:         group.DeviceId,
 		Power:      group.Power,
-		Created:    time.Unix(int64(group.Num9002), 0).Format(time.RFC3339),
+		Created:    time.Unix(int64(group.CreatedAt), 0).Format(time.RFC3339),
 		DeviceList: group.Content.DeviceList.DeviceIds,
 	}
 	return gr
@@ -92,7 +93,7 @@ func ToGroupResponseProto(group Group) *pb.Group {
 	return &pb.Group{
 		Id:      int32(group.DeviceId),
 		Power:   int32(group.Power),
-		Created: time.Unix(int64(group.Num9002), 0).Format(time.RFC3339),
+		Created: time.Unix(int64(group.CreatedAt), 0).Format(time.RFC3339),
 		Devices: ids,
 	}
 }

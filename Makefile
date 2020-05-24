@@ -28,3 +28,6 @@ release:
 
 run: build
 	./dist/tradfri-darwin-amd64
+
+lint: fmt
+	docker run --rm -v $(pwd):/app -w /app golangci/golangci-lint:v1.27.0 golangci-lint run -v

@@ -42,9 +42,9 @@ func init() {
 	commandFlags.Int("grpc_port", 8081, "port of the grpc server")
 
 	commandFlags.AddFlagSet(configFlags)
-	commandFlags.Parse(os.Args[1:])
+	_ = commandFlags.Parse(os.Args[1:])
 
-	viper.BindPFlags(configFlags)
+	_ = viper.BindPFlags(configFlags)
 	viper.AutomaticEnv()
 	viper.AddConfigPath(".") // e.g. reads ./config.json or config.yaml
 	err := viper.ReadInConfig()

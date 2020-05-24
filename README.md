@@ -20,6 +20,7 @@ This application is just stitching together the excellent work of [github.com/du
 - https://bitsex.net/software/2017/coap-endpoints-on-ikea-tradfri/
 
 ### Changelog
+- 2020-05-24: Corrected property names on models, device listing, timed color change support and HSL color support by [rubikscraft](https://github.com/rubikscraft)
 - 2020-02-11: Blinds support by [https://github.com/sthorsen](https://github.com/sthorsen)
 - 2020-01-16: Updated logging to use logrus with configurable log level in config.json.
 - 2019-06-19: gRPC support by [https://github.com/Age15990](https://github.com/Age15990)

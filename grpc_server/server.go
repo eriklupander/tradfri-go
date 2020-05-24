@@ -2,9 +2,6 @@ package grpc_server
 
 import (
 	"context"
-	"fmt"
-	"strconv"
-
 	pb "github.com/eriklupander/tradfri-go/grpc_server/golang"
 	"github.com/eriklupander/tradfri-go/model"
 	"github.com/eriklupander/tradfri-go/tradfri"
@@ -43,7 +40,7 @@ func (s *server) GetGroup(ctx context.Context, r *pb.GetGroupRequest) (*pb.GetGr
 	if r.GetId() < 1 {
 		return nil, status.Error(codes.InvalidArgument, "group id is mandatory")
 	}
-	g, err := s.tradfriClient.GetGroup(fmt.Sprintf("%d", r.GetId()))
+	g, err := s.tradfriClient.GetGroup(int(r.GetId()))
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -56,13 +53,13 @@ func (s *server) ListDevices(ctx context.Context, r *pb.ListDevicesRequest) (*pb
 	if r.GetGroupId() < 1 {
 		return nil, status.Error(codes.InvalidArgument, "group id is mandatory")
 	}
-	g, err := s.tradfriClient.GetGroup(fmt.Sprintf("%d", r.GetGroupId()))
+	g, err := s.tradfriClient.GetGroup(int(r.GetGroupId()))
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	res := make([]*pb.Device, 0)
 	for _, id := range g.Content.DeviceList.DeviceIds {
-		d, _ := s.tradfriClient.GetDevice(strconv.Itoa(id))
+		d, _ := s.tradfriClient.GetDevice(id)
 		res = append(res, model.ToDeviceResponseProto(d))
 	}
 	return &pb.ListDevicesResponse{
@@ -74,7 +71,7 @@ func (s *server) ListDeviceIDs(ctx context.Context, r *pb.ListDeviceIDsRequest) 
 	if r.GetGroupId() < 1 {
 		return nil, status.Error(codes.InvalidArgument, "group id is mandatory")
 	}
-	g, err := s.tradfriClient.GetGroup(fmt.Sprintf("%d", r.GetGroupId()))
+	g, err := s.tradfriClient.GetGroup(int(r.GetGroupId()))
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -91,7 +88,7 @@ func (s *server) GetDevice(ctx context.Context, r *pb.GetDeviceRequest) (*pb.Get
 	if r.GetId() < 1 {
 		return nil, status.Error(codes.InvalidArgument, "id is mandatory")
 	}
-	d, err := s.tradfriClient.GetDevice(fmt.Sprintf("%d", r.GetId()))
+	d, err := s.tradfriClient.GetDevice(int(r.GetId()))
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -106,13 +103,13 @@ func (s *server) ChangeDeviceColor(ctx context.Context, r *pb.ChangeDeviceColorR
 	}
 	// rgb
 	if r.GetRgb() != "" {
-		if _, err := s.tradfriClient.PutDeviceColorRGB(fmt.Sprintf("%d", r.GetId()), r.GetRgb()); err != nil {
+		if _, err := s.tradfriClient.PutDeviceColorRGB(int(r.GetId()), r.GetRgb()); err != nil {
 			return nil, status.Error(codes.Internal, err.Error())
 		}
 		return &pb.ChangeDeviceColorResponse{}, nil
 	}
 	// we assume it is x and y request
-	if _, err := s.tradfriClient.PutDeviceColor(fmt.Sprintf("%d", r.GetId()), int(r.GetXcolor()), int(r.GetYcolor())); err != nil {
+	if _, err := s.tradfriClient.PutDeviceColor(int(r.GetId()), int(r.GetXcolor()), int(r.GetYcolor())); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	return &pb.ChangeDeviceColorResponse{}, nil
@@ -122,7 +119,7 @@ func (s *server) ChangeDeviceDimming(ctx context.Context, r *pb.ChangeDeviceDimm
 	if r.GetId() < 1 {
 		return nil, status.Error(codes.InvalidArgument, "id is mandatory")
 	}
-	if _, err := s.tradfriClient.PutDeviceDimming(fmt.Sprintf("%d", r.GetId()), int(r.GetValue())); err != nil {
+	if _, err := s.tradfriClient.PutDeviceDimming(int(r.GetId()), int(r.GetValue())); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	return &pb.ChangeDeviceDimmingResponse{}, nil
@@ -132,7 +129,7 @@ func (s *server) TurnDeviceOn(ctx context.Context, r *pb.TurnDeviceOnRequest) (*
 	if r.GetId() < 1 {
 		return nil, status.Error(codes.InvalidArgument, "id is mandatory")
 	}
-	if _, err := s.tradfriClient.PutDevicePower(fmt.Sprintf("%d", r.GetId()), 1); err != nil {
+	if _, err := s.tradfriClient.PutDevicePower(int(r.GetId()), 1); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	return &pb.TurnDeviceOnResponse{}, nil
@@ -142,7 +139,7 @@ func (s *server) TurnDeviceOff(ctx context.Context, r *pb.TurnDeviceOffRequest) 
 	if r.GetId() < 1 {
 		return nil, status.Error(codes.InvalidArgument, "id is mandatory")
 	}
-	if _, err := s.tradfriClient.PutDevicePower(fmt.Sprintf("%d", r.GetId()), 0); err != nil {
+	if _, err := s.tradfriClient.PutDevicePower(int(r.GetId()), 0); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	return &pb.TurnDeviceOffResponse{}, nil
@@ -152,7 +149,7 @@ func (s *server) ChangeDevicePositioning(ctx context.Context, r *pb.ChangeDevice
 	if r.GetId() < 1 {
 		return nil, status.Error(codes.InvalidArgument, "id is mandatory")
 	}
-	if _, err := s.tradfriClient.PutDevicePositioning(fmt.Sprintf("%d", r.GetId()), float32(r.GetValue())); err != nil {
+	if _, err := s.tradfriClient.PutDevicePositioning(int(r.GetId()), float32(r.GetValue())); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	return &pb.ChangeDevicePositioningResponse{}, nil

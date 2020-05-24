@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
-	"strconv"
 	"strings"
 
 	"github.com/dustin/go-coap"
@@ -53,10 +52,10 @@ func NewTradfriClient(gatewayAddress, clientID, psk string) *Client {
 
 // PutDeviceDimming sets the dimming property (0-255) of the specified device.
 // The device must be a bulb supporting dimming, otherwise the call if ineffectual.
-func (tc *Client) PutDeviceDimming(deviceId string, dimming int) (model.Result, error) {
+func (tc *Client) PutDeviceDimming(deviceId int, dimming int) (model.Result, error) {
 	payload := fmt.Sprintf(`{ "3311": [{ "5851": %d }] }`, dimming)
 	logrus.Infof("Payload is: %v", payload)
-	resp, err := tc.Call(tc.dtlsclient.BuildPUTMessage("/15001/"+deviceId, payload))
+	resp, err := tc.Call(tc.dtlsclient.BuildPUTMessage(toDeviceUri(deviceId), payload))
 	if err != nil {
 		return model.Result{}, err
 	}
@@ -65,13 +64,13 @@ func (tc *Client) PutDeviceDimming(deviceId string, dimming int) (model.Result, 
 }
 
 // PutDevicePower switches the power state of the specified device to on (1) or off (0)
-func (tc *Client) PutDevicePower(deviceId string, power int) (model.Result, error) {
+func (tc *Client) PutDevicePower(deviceId int, power int) (model.Result, error) {
 	if !(power == 1 || power == 0) {
 		return model.Result{}, fmt.Errorf("invalid value for setting power state, must be 1 or 0")
 	}
 	payload := fmt.Sprintf(`{ "3311": [{ "5850": %d }] }`, power)
 	logrus.Infof("Payload is: %v", payload)
-	resp, err := tc.Call(tc.dtlsclient.BuildPUTMessage("/15001/"+deviceId, payload))
+	resp, err := tc.Call(tc.dtlsclient.BuildPUTMessage(toDeviceUri(deviceId), payload))
 	if err != nil {
 		return model.Result{}, err
 	}
@@ -80,13 +79,13 @@ func (tc *Client) PutDevicePower(deviceId string, power int) (model.Result, erro
 }
 
 // PutDeviceState allows changing both power (1 or 0) and dimmer (0-255) for a given device with one command.
-func (tc *Client) PutDeviceState(deviceId string, power int, dimmer int, color string) (model.Result, error) {
+func (tc *Client) PutDeviceState(deviceId int, power int, dimmer int) (model.Result, error) {
 	if !(power == 1 || power == 0) {
 		return model.Result{}, fmt.Errorf("invalid value for setting power state, must be 1 or 0")
 	}
 	payload := fmt.Sprintf(`{ "3311": [{ "5850": %d, "5851": %d}] }`, power, dimmer) // , "5706": "%s"
 	logrus.Infof("Payload is: %v", payload)
-	resp, err := tc.Call(tc.dtlsclient.BuildPUTMessage("/15001/"+deviceId, payload))
+	resp, err := tc.Call(tc.dtlsclient.BuildPUTMessage(toDeviceUri(deviceId), payload))
 	if err != nil {
 		return model.Result{}, err
 	}
@@ -97,15 +96,15 @@ func (tc *Client) PutDeviceState(deviceId string, power int, dimmer int, color s
 // PutDeviceColor sets the CIE 1931 color space x/y color, x and y must be between 0-65536 but note that
 // many combinations won't work. See CIE 1931 for more details.
 // It is not recommended to use these values to set colors, as it is often not supported by the gateway and is intended for internal use.
-func (tc *Client) PutDeviceColor(deviceId string, x, y int) (model.Result, error) {
+func (tc *Client) PutDeviceColor(deviceId int, x, y int) (model.Result, error) {
 	return tc.PutDeviceColorTimed(deviceId, x, y, 500)
 }
 
 // PutDeviceColorTimed does the same as PutDeviceColor but it gives you the ability to change the speed at which the color changes
-func (tc *Client) PutDeviceColorTimed(deviceId string, x, y int, transitionTimeMS int) (model.Result, error) {
+func (tc *Client) PutDeviceColorTimed(deviceId int, x, y int, transitionTimeMS int) (model.Result, error) {
 	payload := fmt.Sprintf(`{ "3311": [ {"5709": %d, "5710": %d, "5712": %d}] }`, x, y, transitionTimeMS/100)
 	logrus.Infof("Payload is: %v", payload)
-	resp, err := tc.Call(tc.dtlsclient.BuildPUTMessage("/15001/"+deviceId, payload))
+	resp, err := tc.Call(tc.dtlsclient.BuildPUTMessage(toDeviceUri(deviceId), payload))
 	if err != nil {
 		return model.Result{}, err
 	}
@@ -115,12 +114,12 @@ func (tc *Client) PutDeviceColorTimed(deviceId string, x, y int, transitionTimeM
 
 // PutDeviceColorRGB sets the color of the bulb using RGB hex string such as 8f2686 (purple). Note that
 // It does not use the built in rgb hex parameter as that does not work reliably, so the rgb is converted to hsl and that is sent
-func (tc *Client) PutDeviceColorRGB(deviceId, rgb string) (model.Result, error) {
+func (tc *Client) PutDeviceColorRGB(deviceId int, rgb string) (model.Result, error) {
 	return tc.PutDeviceColorRGBTimed(deviceId, rgb, 500)
 }
 
 // PutDeviceColorRGBTimed does the same as PutDeviceColorRGB but it gives you the ability to change the speed at which the color changes
-func (tc *Client) PutDeviceColorRGBTimed(deviceId, rgb string, transitionTimeMS int) (model.Result, error) {
+func (tc *Client) PutDeviceColorRGBTimed(deviceId int, rgb string, transitionTimeMS int) (model.Result, error) {
 	r, g, b, err := hexStringToRgb(rgb)
 	if err != nil {
 		return model.Result{}, err
@@ -130,12 +129,12 @@ func (tc *Client) PutDeviceColorRGBTimed(deviceId, rgb string, transitionTimeMS 
 }
 
 // PutDeviceColorRGBInt does about the same as PutDeviceColorRGB except you can directly pass the rgb instead of a hex string
-func (tc *Client) PutDeviceColorRGBInt(deviceId string, r, g, b int) (model.Result, error) {
+func (tc *Client) PutDeviceColorRGBInt(deviceId int, r, g, b int) (model.Result, error) {
 	return tc.PutDeviceColorRGBIntTimed(deviceId, r, g, b, 500)
 }
 
 // PutDeviceColorRGBIntTimed does the same as PutDeviceColorRGBInt but it gives you the ability to change the speed at which the color changes
-func (tc *Client) PutDeviceColorRGBIntTimed(deviceId string, r, g, b int, transitionTimeMS int) (model.Result, error) {
+func (tc *Client) PutDeviceColorRGBIntTimed(deviceId int, r, g, b int, transitionTimeMS int) (model.Result, error) {
 	h, s, l := rgbToHsl(r, g, b)
 
 	return tc.PutDeviceColorHSLTimed(deviceId, h, s, l, transitionTimeMS)
@@ -143,19 +142,19 @@ func (tc *Client) PutDeviceColorRGBIntTimed(deviceId string, r, g, b int, transi
 
 // PutDeviceColorHSL sets the color of the bulb using the HSL color notation
 // This is more effictive than RGB because RGB is always at full brightness, ("000000" is the same as "ffffff")
-func (tc *Client) PutDeviceColorHSL(deviceId string, hue float64, saturation float64, lightness float64) (model.Result, error) {
+func (tc *Client) PutDeviceColorHSL(deviceId int, hue float64, saturation float64, lightness float64) (model.Result, error) {
 	return tc.PutDeviceColorHSLTimed(deviceId, hue, saturation, lightness, 500)
 }
 
 // PutDeviceColorHSLTimed does the same as PutDeviceColorHSL but it gives you the ability to change the speed at which the color changes
-func (tc *Client) PutDeviceColorHSLTimed(deviceId string, hue float64, saturation float64, lightness float64, transitionTimeMS int) (model.Result, error) {
+func (tc *Client) PutDeviceColorHSLTimed(deviceId int, hue float64, saturation float64, lightness float64, transitionTimeMS int) (model.Result, error) {
 	hueInt := int(mapRange(hue, 0, 360, 0, 65279))
 	saturationInt := int(mapRange(saturation, 0, 100, 0, 65279))
 	lightnessInt := int(mapRange(lightness, 0, 100, 0, 254))
 
 	payload := fmt.Sprintf(`{ "3311": [ {"5707": %d, "5708": %d, "5851": %d, "5712": %d}] }`, hueInt, saturationInt, lightnessInt, transitionTimeMS/100)
 	logrus.Infof("Payload is: %v", payload)
-	resp, err := tc.Call(tc.dtlsclient.BuildPUTMessage("/15001/"+deviceId, payload))
+	resp, err := tc.Call(tc.dtlsclient.BuildPUTMessage(toDeviceUri(deviceId), payload))
 	if err != nil {
 		return model.Result{}, err
 	}
@@ -164,10 +163,10 @@ func (tc *Client) PutDeviceColorHSLTimed(deviceId string, hue float64, saturatio
 }
 
 // PutDevicePositioning sets the positioning property (0-100) of the specified device.
-func (tc *Client) PutDevicePositioning(deviceId string, positioning float32) (model.Result, error) {
+func (tc *Client) PutDevicePositioning(deviceId int, positioning float32) (model.Result, error) {
 	payload := fmt.Sprintf(`{ "15015": [{ "5536": %f }] }`, positioning)
 	logrus.Infof("Payload is: %v", payload)
-	resp, err := tc.Call(tc.dtlsclient.BuildPUTMessage("/15001/"+deviceId, payload))
+	resp, err := tc.Call(tc.dtlsclient.BuildPUTMessage(toDeviceUri(deviceId), payload))
 	if err != nil {
 		return model.Result{}, err
 	}
@@ -192,16 +191,16 @@ func (tc *Client) ListGroups() ([]model.Group, error) {
 		return groups, err
 	}
 
-	for _, id := range groupIds {
-		group, _ := tc.GetGroup(strconv.Itoa(id))
+	for _, groupId := range groupIds {
+		group, _ := tc.GetGroup(groupId)
 		groups = append(groups, group)
 	}
 	return groups, nil
 }
 
 // GetGroup gets the JSON representation of the specified group.
-func (tc *Client) GetGroup(id string) (model.Group, error) {
-	resp, err := tc.Call(tc.dtlsclient.BuildGETMessage("/15004/" + id))
+func (tc *Client) GetGroup(groupId int) (model.Group, error) {
+	resp, err := tc.Call(tc.dtlsclient.BuildGETMessage(toGroupUri(groupId)))
 	group := &model.Group{}
 	if err != nil {
 		return *group, err
@@ -215,10 +214,10 @@ func (tc *Client) GetGroup(id string) (model.Group, error) {
 }
 
 // GetDevice gets the JSON representation of the specified device.
-func (tc *Client) GetDevice(id string) (model.Device, error) {
+func (tc *Client) GetDevice(deviceId int) (model.Device, error) {
 	device := &model.Device{}
 
-	resp, err := tc.Call(tc.dtlsclient.BuildGETMessage("/15001/" + id))
+	resp, err := tc.Call(tc.dtlsclient.BuildGETMessage(toDeviceUri(deviceId)))
 	if err != nil {
 		return *device, err
 	}
@@ -258,7 +257,7 @@ func (tc *Client) ListDevices() ([]model.Device, error) {
 	devices = make([]model.Device, len(resp))
 
 	for i, id := range resp {
-		device, err := tc.GetDevice(strconv.Itoa(id))
+		device, err := tc.GetDevice(id)
 		if err != nil {
 			return devices, err
 		}
@@ -325,7 +324,6 @@ func rgbToHsl(rInt int, gInt int, bInt int) (float64, float64, float64) {
 
 	var h, s, l float64
 	h = (maximum + minimum) / 2
-	s = h
 	l = h
 
 	if maximum == minimum {
@@ -347,13 +345,10 @@ func rgbToHsl(rInt int, gInt int, bInt int) (float64, float64, float64) {
 			} else {
 				h = (g-b)/d + 0
 			}
-			break
 		case g:
 			h = (b-r)/d + 2
-			break
 		case b:
 			h = (r-g)/d + 4
-			break
 		}
 		h /= 6
 	}
@@ -372,4 +367,12 @@ func hexStringToRgb(hexString string) (int, int, int, error) {
 	}
 
 	return int(bytes[0]), int(bytes[1]), int(bytes[2]), nil
+}
+
+func toDeviceUri(deviceId int) string {
+	return fmt.Sprintf("/15001/%d", deviceId)
+}
+
+func toGroupUri(groupId int) string {
+	return fmt.Sprintf("/15004/%d", groupId)
 }

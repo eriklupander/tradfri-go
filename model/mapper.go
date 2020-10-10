@@ -37,6 +37,20 @@ func ToDeviceResponse(device Device) interface{} {
 			Position: device.BlindControl[0].Position,
 		}
 	}
+
+	// power outlet
+	if len(device.OutletControl) > 0 {
+		return PowerPlugResponse{
+			DeviceMetadata: DeviceMetadata{
+				Name:   device.Name,
+				Id:     device.DeviceId,
+				Type:   device.Metadata.TypeName,
+				Vendor: device.Metadata.Vendor,
+			},
+			Power: device.OutletControl[0].Power == 1,
+		}
+	}
+
 	return nil
 }
 

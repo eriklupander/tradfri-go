@@ -22,6 +22,11 @@ type Device struct {
 		Dimmer           int     `json:"5851"`
 		DeviceId         int     `json:"9003"`
 	} `json:"3311"`
+	OutletControl []struct {
+		Power    int `json:"5850"`
+		Dimmer   int `json:"5851"`
+		DeviceId int `json:"9003"`
+	} `json:"3312"`
 	BlindControl []struct {
 		Position float32 `json:"5536"`
 		DeviceId int     `json:"9003"`

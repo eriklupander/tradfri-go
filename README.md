@@ -20,6 +20,7 @@ This application is just stitching together the excellent work of [github.com/du
 - https://bitsex.net/software/2017/coap-endpoints-on-ikea-tradfri/
 
 ### Changelog
+- 2020-10-11: v1.0.1 release. Power outlet querying by [https://github.com/YuriyNasretdinov](Yuriy Nasretdinov)
 - 2020-05-24: v1.0.0 release. GroupIDs and DeviceIDs are now integers. Some minor refactoring after running [golang-cilint](https://github.com/golangci/golangci-lint) 
 - 2020-05-24: Corrected property names on models, device listing, timed color change support and HSL color support by [rubikscraft](https://github.com/rubikscraft)
 - 2020-02-11: Blinds support by [https://github.com/sthorsen](https://github.com/sthorsen)

@@ -7,7 +7,7 @@ Native Go implementation for talking CoAP to a [IKEA Trådfri](https://www.ikea.
 
 **Note: The author is not in any way affiliated or related to IKEA, this is purely a hobby project!**
 
-**Note 2: The application is being developed and have bugs and known issues!**
+**Note 2: The application is not really being actively developed and may and have bugs and known issues! Will happily accept PRs though!**
 
 - CoAP implementation from [github.com/dustin/go-coap](https://github.com/dustin/go-coap)
 - DTLS 1.2 support from [github.com/bocajim/dtls](https://github.com/bocajim/dtls)

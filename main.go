@@ -114,23 +114,27 @@ func main() {
 	// Check running mode...
 	if serverMode {
 		logrus.Info("Running in server mode")
-		logrus.Infof("REST: %s:%d", listenHost, port)
-		logrus.Infof("gRPC: %s:%d", listenHost, grpcPort)
 
 		tc := tradfri.NewTradfriClient(gatewayAddress, clientID, psk)
 		wg := sync.WaitGroup{}
 		// REST
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			router.SetupChi(tc, fmt.Sprintf("%s:%d", listenHost, port))
-		}()
+		if port > 0 {
+			wg.Add(1)
+			logrus.Infof("REST: %s:%d", listenHost, port)
+			go func() {
+				defer wg.Done()
+				router.SetupChi(tc, fmt.Sprintf("%s:%d", listenHost, port))
+			}()
+		}
 		// gRPC
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			go registerGrpcServer(tc, fmt.Sprintf("%s:%d", listenHost, grpcPort))
-		}()
+		if grpcPort > 0 {
+			wg.Add(1)
+			logrus.Infof("gRPC: %s:%d", listenHost, grpcPort)
+			go func() {
+				defer wg.Done()
+				go registerGrpcServer(tc, fmt.Sprintf("%s:%d", listenHost, grpcPort))
+			}()
+		}
 
 		wg.Wait()
 	} else {

@@ -18,8 +18,12 @@ builds:
     goarch:
       - amd64
       - arm
+      - arm64
     goarm:
       - 5
+    ignore:
+      - goos: windows
+        goarch: arm
 
 archives:
   - format: tar.gz

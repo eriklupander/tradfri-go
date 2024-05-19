@@ -28,17 +28,17 @@ var commandFlags = pflag.NewFlagSet("commands", pflag.ExitOnError)
 
 func init() {
 
-	configFlags.String("gateway_ip", "", "ip to your gateway. No protocol or port here!")
-	configFlags.String("gateway_address", "", "address to your gateway. Including port here!")
+	configFlags.String("gateway_ip", "", "IP to your gateway. No protocol or port here!")
+	configFlags.String("gateway_address", "", "Address to your gateway. Including port here!")
 	configFlags.String("psk", "", "Pre-shared key on bottom of Gateway")
 	configFlags.String("client_id", "", "Your client id, make something up or use the NNN-NNN-NNN on the bottom of your Gateway")
-	configFlags.String("loglevel", "info", "log leve. Allowed values: fatal, error, warn, info, debug, trace")
+	configFlags.String("loglevel", "info", "Log level. Allowed values: fatal, error, warn, info, debug, trace")
 
 	commandFlags.Bool("server", false, "Start in server mode?")
-	commandFlags.Bool("authenticate", false, "Perform PSK exchange")
+	commandFlags.Bool("authenticate", false, "Perform PSK exchange?")
 	commandFlags.String("get", "", "URL to GET")
 	commandFlags.String("put", "", "URL to PUT")
-	commandFlags.String("payload", "", "payload for PUT")
+	commandFlags.String("payload", "", "Payload for PUT")
 	commandFlags.String("listen_host", "", "Host to listen on. Default empty allows connections from anywhere. Use \"127.0.0.1\" to only allow local connections.")
 	commandFlags.Int("port", 8080, "Port of the REST server. Set to 0 to disable REST server.")
 	commandFlags.Int("grpc_port", 8081, "Port of the gRPC server. Set to 0 to disable gRPC server.")

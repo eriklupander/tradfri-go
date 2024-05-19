@@ -1,13 +1,13 @@
 package router
 
 import (
-	"fmt"
+	"net/http"
+	"time"
+
 	"github.com/eriklupander/tradfri-go/tradfri"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/sirupsen/logrus"
-	"net/http"
-	"time"
 )
 
 const (
@@ -18,7 +18,7 @@ const (
 var tradfriClient *tradfri.Client
 
 // SetupChi sets up our HTTP router/muxer using Chi, a pointer to a Client must be passed.
-func SetupChi(client *tradfri.Client, port int) {
+func SetupChi(client *tradfri.Client, listenAddress string) {
 	tradfriClient = client
 	logger := middleware.RequestLogger(&middleware.DefaultLogFormatter{Logger: logrus.StandardLogger(), NoColor: false})
 	r := chi.NewRouter()
@@ -54,7 +54,7 @@ func SetupChi(client *tradfri.Client, port int) {
 	})
 
 	// Blocks here!
-	if err := http.ListenAndServe(fmt.Sprintf(":%d", port), r); err !=  nil {
+	if err := http.ListenAndServe(listenAddress, r); err != nil {
 		logrus.WithError(err).Fatal("error starting HTTP server")
 	}
 }

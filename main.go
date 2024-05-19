@@ -118,13 +118,20 @@ func main() {
 		logrus.Infof("gRPC: %s:%d", listenHost, grpcPort)
 
 		tc := tradfri.NewTradfriClient(gatewayAddress, clientID, psk)
-		// REST
-		go router.SetupChi(tc, fmt.Sprintf("%s:%d", listenHost, port))
-		// Grpc
-		go registerGrpcServer(tc, fmt.Sprintf("%s:%d", listenHost, grpcPort))
-
 		wg := sync.WaitGroup{}
+		// REST
 		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			router.SetupChi(tc, fmt.Sprintf("%s:%d", listenHost, port))
+		}()
+		// gRPC
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			go registerGrpcServer(tc, fmt.Sprintf("%s:%d", listenHost, grpcPort))
+		}()
+
 		wg.Wait()
 	} else {
 		// client mode

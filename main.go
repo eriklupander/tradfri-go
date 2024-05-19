@@ -40,8 +40,8 @@ func init() {
 	commandFlags.String("put", "", "URL to PUT")
 	commandFlags.String("payload", "", "payload for PUT")
 	commandFlags.String("listen_host", "", "Host to listen on. Default empty allows connections from anywhere. Use \"127.0.0.1\" to only allow local connections.")
-	commandFlags.Int("port", 8080, "port of the REST server")
-	commandFlags.Int("grpc_port", 8081, "port of the gRPC server")
+	commandFlags.Int("port", 8080, "Port of the REST server. Set to 0 to disable REST server.")
+	commandFlags.Int("grpc_port", 8081, "Port of the gRPC server. Set to 0 to disable gRPC server.")
 
 	commandFlags.AddFlagSet(configFlags)
 	_ = commandFlags.Parse(os.Args[1:])

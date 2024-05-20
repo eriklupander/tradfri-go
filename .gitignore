@@ -21,3 +21,4 @@ dist
 *.txt
 
 vendor/
+dist/

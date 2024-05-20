@@ -5,7 +5,7 @@ import (
 	"github.com/eriklupander/tradfri-go/model"
 	"github.com/go-chi/chi"
 	"github.com/pkg/errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
 )
@@ -31,7 +31,7 @@ func setColorRGBHex(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 
 	rgbColorRequest := model.RgbColorRequest{}
 	if err := json.Unmarshal(body, &rgbColorRequest); err != nil {
@@ -49,7 +49,7 @@ func setDimming(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 
 	dimmingRequest := model.DimmingRequest{}
 	if err := json.Unmarshal(body, &dimmingRequest); err != nil {
@@ -66,7 +66,7 @@ func setPower(w http.ResponseWriter, r *http.Request) {
 		badIdentifierError(w, chi.URLParam(r, deviceParam), err)
 		return
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 
 	powerRequest := model.PowerRequest{}
 	if err := json.Unmarshal(body, &powerRequest); err != nil {
@@ -83,7 +83,7 @@ func setState(w http.ResponseWriter, r *http.Request) {
 		badIdentifierError(w, chi.URLParam(r, deviceParam), err)
 		return
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 
 	stateReq := model.StateRequest{}
 	if err := json.Unmarshal(body, &stateReq); err != nil {
@@ -101,7 +101,7 @@ func setPositioning(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	positioningReq := model.PositioningRequest{}
 	if err := json.Unmarshal(body, &positioningReq); err != nil {
 		badRequest(w, errors.Wrap(err, "unmarshalling of positioning JSON body failed"))
@@ -112,7 +112,7 @@ func setPositioning(w http.ResponseWriter, r *http.Request) {
 	respond(w, res, err)
 }
 
-func listGroups(w http.ResponseWriter, r *http.Request) {
+func listGroups(w http.ResponseWriter, _ *http.Request) {
 	groups, err := tradfriClient.ListGroups()
 	groupResponses := make([]model.GroupResponse, 0)
 	for _, g := range groups {

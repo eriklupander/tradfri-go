@@ -3,7 +3,7 @@ package router
 import (
 	"encoding/json"
 	"github.com/eriklupander/tradfri-go/model"
-	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5"
 	"github.com/pkg/errors"
 	"io"
 	"net/http"

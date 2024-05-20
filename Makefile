@@ -2,7 +2,7 @@ GOFILES = $(shell find . -name '*.go' -not -path './vendor/*')
 GOPACKAGES = $(shell go list ./...  | grep -v /vendor/)
 TEST_RESULTS=/tmp/test-results
 
-default: format build test vet
+default: fmt build test vet
 
 .PHONY: fmt
 fmt:

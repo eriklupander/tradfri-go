@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/dustin/go-coap v0.0.0-20190908170653-752e0f79981e
 	github.com/eriklupander/dtls v0.0.0-20190304211642-b36018226359
-	github.com/go-chi/chi/v5 v5.0.12
+	github.com/go-chi/chi/v5 v5.2.2
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.3

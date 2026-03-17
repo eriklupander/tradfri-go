@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"net"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -51,8 +52,8 @@ func init() {
 	viper.AddConfigPath(".") // e.g. reads ./config.json or config.yaml
 	err := viper.ReadInConfig()
 	if err != nil {
-		logrus.Info(err.Error())
-		logrus.Info("You probably have to run --authenticate first")
+		slog.Info(err.Error())
+		slog.Info("You probably have to run --authenticate first")
 	}
 	viper.RegisterAlias("pre_shared_key", "psk")
 }
@@ -64,26 +65,19 @@ func main() {
 		levelStr = "info"
 	}
 	fmt.Printf("Using loglevel: %v\n", levelStr)
-	level, err := logrus.ParseLevel(levelStr)
-	if err != nil {
-		fmt.Println("invalid loglevel")
-		os.Exit(1)
-	}
-	logrus.SetLevel(level)
-	logrus.SetFormatter(&logrus.TextFormatter{
-		FullTimestamp: true,
-	})
-	log.SetOutput(logrus.StandardLogger().Out)
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	slog.SetLogLoggerLevel(parseLevel(levelStr))
+	slog.SetDefault(logger)
 	dtls.SetLogFunc(func(ts time.Time, level string, peer string, msg string) {
 		switch level {
 		case "error":
-			logrus.WithField("level", level).WithField("peer", peer).Error(msg)
+			slog.Error(msg, slog.String("level", level), slog.String("peer", peer))
 		case "warn":
-			logrus.WithField("level", level).WithField("peer", peer).Warn(msg)
+			slog.Warn(msg, slog.String("level", level), slog.String("peer", peer))
 		case "info":
-			logrus.WithField("level", level).WithField("peer", peer).Info(msg)
+			slog.Info(msg, slog.String("level", level), slog.String("peer", peer))
 		case "debug":
-			logrus.WithField("level", level).WithField("peer", peer).Debug(msg)
+			slog.Debug(msg, slog.String("level", level), slog.String("peer", peer))
 		}
 	})
 	dtls.SetLogLevel(resolveDTLSLogLevel(levelStr))
@@ -113,14 +107,14 @@ func main() {
 
 	// Check running mode...
 	if serverMode {
-		logrus.Info("Running in server mode")
+		slog.Info("Running in server mode")
 
 		tc := tradfri.NewTradfriClient(gatewayAddress, clientID, psk)
 		wg := sync.WaitGroup{}
 		// REST
 		if port > 0 {
 			wg.Add(1)
-			logrus.Infof("REST: %s:%d", listenHost, port)
+			slog.Info(fmt.Sprintf("REST: %s:%d", listenHost, port))
 			go func() {
 				defer wg.Done()
 				router.SetupChi(tc, fmt.Sprintf("%s:%d", listenHost, port))
@@ -129,7 +123,7 @@ func main() {
 		// gRPC
 		if grpcPort > 0 {
 			wg.Add(1)
-			logrus.Infof("gRPC: %s:%d", listenHost, grpcPort)
+			slog.Info(fmt.Sprintf("gRPC: %s:%d", listenHost, grpcPort))
 			go func() {
 				defer wg.Done()
 				go registerGrpcServer(tc, fmt.Sprintf("%s:%d", listenHost, grpcPort))
@@ -141,15 +135,30 @@ func main() {
 		// client mode
 		if getErr == nil && get != "" {
 			resp, _ := tradfri.NewTradfriClient(gatewayAddress, clientID, psk).Get(get)
-			logrus.Infof("%v", string(resp.Payload))
+			slog.Info(string(resp.Payload))
 		} else if putErr == nil && put != "" {
 			resp, _ := tradfri.NewTradfriClient(gatewayAddress, clientID, psk).Put(put, payload)
-			logrus.Infof("%v", string(resp.Payload))
+			slog.Info(string(resp.Payload))
 		} else {
-			logrus.Info("No client operation was specified, supported one(s) are: get, put, authenticate")
+			slog.Info("No client operation was specified, supported one(s) are: get, put, authenticate")
 		}
 	}
 
+}
+
+func parseLevel(str string) slog.Level {
+	switch strings.ToLower(str) {
+	case "debug":
+		return slog.LevelDebug
+	case "error":
+		return slog.LevelError
+	case "warn":
+		return slog.LevelWarn
+	case "info":
+		fallthrough
+	default:
+		return slog.LevelInfo
+	}
 }
 
 func checkRequiredConfig(gatewayAddress, clientID, psk string) {
@@ -174,7 +183,7 @@ func performTokenExchange(gatewayAddress, clientID, psk string) {
 	go func() {
 		select {
 		case <-time.After(time.Second * 5):
-			logrus.Info("(Please note that the key exchange may appear to be stuck at \"Connecting to peer at\" if the PSK from the bottom of your Gateway is not entered correctly.)")
+			slog.Info("(Please note that the key exchange may appear to be stuck at \"Connecting to peer at\" if the PSK from the bottom of your Gateway is not entered correctly.)")
 		case <-done:
 		}
 	}()
@@ -194,7 +203,7 @@ func performTokenExchange(gatewayAddress, clientID, psk string) {
 	if err != nil {
 		fail(err.Error())
 	}
-	logrus.Info("Your configuration including the new PSK and clientID has been written to config.json, keep this file safe!")
+	slog.Info("Your configuration including the new PSK and clientID has been written to config.json, keep this file safe!")
 }
 
 func registerGrpcServer(tc *tradfri.Client, listenAddress string) {
@@ -209,15 +218,17 @@ func registerGrpcServer(tc *tradfri.Client, listenAddress string) {
 	pb.RegisterTradfriServiceServer(s, grpc_server.New(tc))
 	lis, err := net.Listen("tcp", listenAddress)
 	if err != nil {
-		logrus.Infof("failed to listen on grpc %s: %v\n", listenAddress, err.Error())
+		slog.Info(fmt.Sprintf("failed to listen on grpc %s: %v", listenAddress, err.Error()))
 		return
 	}
 	reflection.Register(s)
-	logrus.Info(s.Serve(lis))
+	if err := s.Serve(lis); err != nil {
+		slog.Info(err.Error())
+	}
 }
 
 func fail(msg string) {
-	logrus.Info(msg)
+	slog.Info(msg)
 	os.Exit(1)
 }
 

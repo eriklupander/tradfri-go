@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"math"
 	"strings"
 
@@ -187,7 +188,7 @@ func (tc *Client) ListGroups() ([]model.Group, error) {
 	groupIds := make([]int, 0)
 	err = json.Unmarshal(resp.Payload, &groupIds)
 	if err != nil {
-		logrus.Info("Unable to parse groups list into JSON: " + err.Error())
+		slog.Info("Unable to parse groups list into JSON: " + err.Error())
 		return groups, err
 	}
 

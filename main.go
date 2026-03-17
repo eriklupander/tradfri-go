@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"net"
@@ -15,9 +16,7 @@ import (
 	pb "github.com/eriklupander/tradfri-go/grpc_server/golang"
 	"github.com/eriklupander/tradfri-go/router"
 	"github.com/eriklupander/tradfri-go/tradfri"
-	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
-	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
-	"github.com/sirupsen/logrus"
+	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
@@ -114,7 +113,7 @@ func main() {
 		// REST
 		if port > 0 {
 			wg.Add(1)
-			slog.Info(fmt.Sprintf("REST: %s:%d", listenHost, port))
+			slog.Info("REST server", slog.String("host", listenHost), slog.Int("port", port))
 			go func() {
 				defer wg.Done()
 				router.SetupChi(tc, fmt.Sprintf("%s:%d", listenHost, port))
@@ -123,7 +122,7 @@ func main() {
 		// gRPC
 		if grpcPort > 0 {
 			wg.Add(1)
-			slog.Info(fmt.Sprintf("gRPC: %s:%d", listenHost, grpcPort))
+			slog.Info("gRPC server", slog.String("host", listenHost), slog.Int("port", grpcPort))
 			go func() {
 				defer wg.Done()
 				go registerGrpcServer(tc, fmt.Sprintf("%s:%d", listenHost, grpcPort))
@@ -207,23 +206,23 @@ func performTokenExchange(gatewayAddress, clientID, psk string) {
 }
 
 func registerGrpcServer(tc *tradfri.Client, listenAddress string) {
+	logger := logging.LoggerFunc(func(ctx context.Context, lvl logging.Level, msg string, fields ...any) {
+		slog.Log(ctx, slog.Level(lvl), msg, fields...)
+	})
+	opts := []logging.Option{logging.WithLogOnEvents(logging.StartCall, logging.FinishCall)}
 	s := grpc.NewServer(
-		grpc_middleware.WithUnaryServerChain(
-			grpc_logrus.UnaryServerInterceptor(logrus.NewEntry(logrus.StandardLogger())),
-		),
-		grpc_middleware.WithStreamServerChain(
-			grpc_logrus.StreamServerInterceptor(logrus.NewEntry(logrus.StandardLogger())),
-		),
+		grpc.ChainUnaryInterceptor(logging.UnaryServerInterceptor(logger, opts...)),
+		grpc.ChainStreamInterceptor(logging.StreamServerInterceptor(logger, opts...)),
 	)
 	pb.RegisterTradfriServiceServer(s, grpc_server.New(tc))
 	lis, err := net.Listen("tcp", listenAddress)
 	if err != nil {
-		slog.Info(fmt.Sprintf("failed to listen on grpc %s: %v", listenAddress, err.Error()))
+		slog.Error("failed to listen on grpc", slog.String("address", listenAddress), slog.Any("error", err))
 		return
 	}
 	reflection.Register(s)
 	if err := s.Serve(lis); err != nil {
-		slog.Info(err.Error())
+		slog.Error("gRPC server error", slog.Any("error", err))
 	}
 }
 

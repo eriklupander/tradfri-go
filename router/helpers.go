@@ -2,12 +2,9 @@ package router
 
 import (
 	"encoding/json"
-	"fmt"
 	"log/slog"
 	"net/http"
 	"strconv"
-
-	"github.com/sirupsen/logrus"
 )
 
 func respond(w http.ResponseWriter, payload interface{}, err error) {
@@ -19,12 +16,12 @@ func respond(w http.ResponseWriter, payload interface{}, err error) {
 }
 
 func badRequest(w http.ResponseWriter, err error) {
-	logrus.WithError(err).Error("error processing request body")
+	slog.Error("error processing request body", slog.Any("error", err))
 	respondWithError(w, http.StatusBadRequest, err.Error())
 }
 
 func badIdentifierError(w http.ResponseWriter, val interface{}, err error) {
-	logrus.WithError(err).Errorf("bad request, could not parse identifier '%v'", val)
+	slog.Error("bad request, could not parse identifier", slog.Any("identifier", val), slog.Any("error", err))
 	respondWithError(w, http.StatusBadRequest, err.Error())
 }
 
@@ -36,7 +33,7 @@ func respondWithError(w http.ResponseWriter, code int, msg string) {
 // respondWithJSON write json response format
 func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 	response, _ := json.Marshal(payload)
-	slog.Info(fmt.Sprintf("%v", payload))
+	slog.Info("response", slog.Any("payload", payload))
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 	_, _ = w.Write(response)

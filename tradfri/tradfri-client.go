@@ -149,7 +149,7 @@ func (tc *Client) PutDeviceColorHSL(deviceId int, hue float64, saturation float6
 
 // PutDeviceColorHSLTimed does the same as PutDeviceColorHSL but it gives you the ability to change the speed at which the color changes
 func (tc *Client) PutDeviceColorHSLTimed(deviceId int, hue float64, saturation float64, lightness float64, transitionTimeMS int) (model.Result, error) {
-	hueInt := int(mapRange(hue, 0, 360, 0, 65279))
+	hueInt := int(mapRange(hue, 0, 360, 0, 65535))
 	saturationInt := int(mapRange(saturation, 0, 100, 0, 65279))
 	lightnessInt := int(mapRange(lightness, 0, 100, 0, 254))
 

@@ -134,8 +134,8 @@ type Result struct {
 
 // TokenExchange maps the human-readable Token and TypeIdentifies into their IKEA specific numeric codes.
 type TokenExchange struct {
-	Token          string `json:"9091"`
-	TypeIdentifier string `json:"9029"`
+	Token           string `json:"9091"`
+	FirmwareVersion string `json:"9029"`
 }
 
 // REST API structs

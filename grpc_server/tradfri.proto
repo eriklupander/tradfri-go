@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package grpc_server;
 
+option go_package = "github.com/eriklupander/grpc_server/golang";
+
 // The tradfri service definition
 service TradfriService {
   rpc ListGroups (ListGroupsRequest) returns (ListGroupsResponse) {}

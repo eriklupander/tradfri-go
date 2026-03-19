@@ -1,7 +1,7 @@
 package dtlscoap
 
 import (
-	"github.com/sirupsen/logrus"
+	"log/slog"
 	"os"
 	"time"
 
@@ -41,20 +41,20 @@ func (dc *DtlsClient) connect() {
 		Addr:             dc.gatewayAddress,
 		Identity:         dc.clientID,
 		HandshakeTimeout: time.Second * 15}
-	logrus.Infof("Connecting to peer at %v\n", dc.gatewayAddress)
+	slog.Info("Connecting to peer", slog.String("address", dc.gatewayAddress))
 
 	dc.peer, err = listener.AddPeerWithParams(peerParams)
 	if err != nil {
-		logrus.Infof("Unable to connect to Gateway at %v: %v\n", dc.gatewayAddress, err.Error())
+		slog.Error("Unable to connect to Gateway", slog.String("address", dc.gatewayAddress), slog.Any("error", err))
 		os.Exit(1)
 	}
 	dc.peer.UseQueue(true)
-	logrus.Infof("DTLS connection established to %v\n", dc.gatewayAddress)
+	slog.Info("DTLS connection established", slog.String("address", dc.gatewayAddress))
 }
 
 // Call writes the supplied coap.Message to the peer
 func (dc *DtlsClient) Call(req coap.Message) (coap.Message, error) {
-	logrus.Infof("Calling %v %v", req.Code.String(), req.PathString())
+	slog.Info("Calling", slog.String("code", req.Code.String()), slog.String("path", req.PathString()))
 	data, err := req.MarshalBinary()
 	if err != nil {
 		return coap.Message{}, err
@@ -75,12 +75,13 @@ func (dc *DtlsClient) Call(req coap.Message) (coap.Message, error) {
 		return coap.Message{}, err
 	}
 
-	logrus.Info("Response: ")
-	logrus.Infof("MessageID: %v\n", msg.MessageID)
-	logrus.Infof("Type: %v\n", msg.Type)
-	logrus.Infof("Code: %v\n", msg.Code)
-	logrus.Infof("Token: %v\n", msg.Token)
-	logrus.Infof("Payload: %v\n", string(msg.Payload))
+	slog.Info("Response",
+		slog.Any("messageID", msg.MessageID),
+		slog.Any("type", msg.Type),
+		slog.Any("code", msg.Code),
+		slog.Any("token", msg.Token),
+		slog.String("payload", string(msg.Payload)),
+	)
 
 	return msg, nil
 }

@@ -2,6 +2,7 @@ package grpc_server
 
 import (
 	"context"
+
 	pb "github.com/eriklupander/tradfri-go/grpc_server/golang"
 	"github.com/eriklupander/tradfri-go/model"
 	"github.com/eriklupander/tradfri-go/tradfri"
@@ -9,15 +10,25 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// New initialize a new tradfri server
+// TradfriClient defines the gateway operations used by the gRPC server.
+type TradfriClient interface {
+	GetDevice(deviceId int) (model.Device, error)
+	GetGroup(groupId int) (model.Group, error)
+	ListGroups() ([]model.Group, error)
+	PutDeviceColor(deviceId int, x, y int) (model.Result, error)
+	PutDeviceColorRGB(deviceId int, rgb string) (model.Result, error)
+	PutDeviceDimming(deviceId int, dimming int) (model.Result, error)
+	PutDevicePower(deviceId int, power int) (model.Result, error)
+	PutDevicePositioning(deviceId int, positioning float32) (model.Result, error)
+}
+
+// New initializes a new tradfri gRPC server.
 func New(tradfriClient *tradfri.Client) pb.TradfriServiceServer {
-	return &server{
-		tradfriClient: tradfriClient,
-	}
+	return &server{tradfriClient: tradfriClient}
 }
 
 type server struct {
-	tradfriClient *tradfri.Client
+	tradfriClient TradfriClient
 }
 
 func (s *server) ListGroups(ctx context.Context, r *pb.ListGroupsRequest) (*pb.ListGroupsResponse, error) {

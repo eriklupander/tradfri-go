@@ -2,9 +2,9 @@ package router
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/eriklupander/tradfri-go/model"
 	"github.com/go-chi/chi/v5"
-	"github.com/pkg/errors"
 	"io"
 	"net/http"
 	"strconv"
@@ -104,7 +104,7 @@ func setPositioning(w http.ResponseWriter, r *http.Request) {
 	body, _ := io.ReadAll(r.Body)
 	positioningReq := model.PositioningRequest{}
 	if err := json.Unmarshal(body, &positioningReq); err != nil {
-		badRequest(w, errors.Wrap(err, "unmarshalling of positioning JSON body failed"))
+		badRequest(w, fmt.Errorf("unmarshalling of positioning JSON body failed: %w", err))
 		return
 	}
 

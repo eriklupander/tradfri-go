@@ -20,6 +20,7 @@ This application is just stitching together the excellent work of [github.com/du
 - https://bitsex.net/software/2017/coap-endpoints-on-ikea-tradfri/
 
 ### Changelog
+- 2026-03-19: Updated Go version and dependencies. Changed logger to slog. Removed CircleCI integration.
 - 2024-05-20: Update Go version, fix lint errors and other chores.
 - 2024-05-19: Goreleaser support with Github Actions + chores by [dvoros](https://github.com/dvoros)
 - 2023-01-30: Update to Go 1.19 by [Beaujr](https://github.com/Beaujr)
